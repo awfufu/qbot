@@ -51,6 +51,7 @@ func parseMsgJson(raw *api.MessageJson) *Message {
 	result := Message{
 		GroupID:  raw.GroupID,
 		UserID:   raw.Sender.UserID,
+		ReplyID:  0,
 		Nickname: raw.Sender.Nickname,
 		Card:     raw.Sender.Card,
 		Role:     raw.Sender.Role,
@@ -115,20 +116,10 @@ func parseMsgJson(raw *api.MessageJson) *Message {
 				})
 			}
 		case "reply":
-			var replyId string
 			if id, ok := jsonData["id"].(string); ok {
-				replyId = id
+				result.ReplyID, _ = strconv.ParseUint(id, 10, 64)
 			} else if id, ok := jsonData["id"].(float64); ok {
-				replyId = fmt.Sprintf("%.0f", id)
-			}
-			if replyId != "" {
-				replyIdInt, err := strconv.ParseUint(replyId, 10, 64)
-				if err != nil {
-					continue
-				}
-				result.Array = append(result.Array, &ReplyItem{
-					MsgID: replyIdInt,
-				})
+				result.ReplyID = uint64(id)
 			}
 		case "file":
 			result.Array = append(result.Array, &FileItem{

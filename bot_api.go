@@ -4,8 +4,8 @@ import "github.com/awfufu/qbot/api"
 
 // Bot Account APIs
 
-func (b *Bot) SetQqProfile(nickname, company, email, college, personalNote string) error {
-	return api.SetQqProfile(b, nickname, company, email, college, personalNote)
+func (b *Bot) SetProfile(nickname, company, email, college, personalNote string) error {
+	return api.SetProfile(b, nickname, company, email, college, personalNote)
 }
 
 func (b *Bot) GetLoginInfo() (*api.LoginInfo, error) {

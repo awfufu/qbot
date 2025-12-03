@@ -1,6 +1,6 @@
 package api
 
-func SetQqProfile(c Client, nickname, company, email, college, personalNote string) error {
+func SetProfile(c Client, nickname, company, email, college, personalNote string) error {
 	params := map[string]any{
 		"nickname":      nickname,
 		"company":       company,

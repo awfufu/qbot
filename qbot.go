@@ -15,11 +15,17 @@ import (
 func NewBot(address string) *Bot {
 	bot := &Bot{
 		httpClient: &http.Client{
+			Transport: &http.Transport{
+				MaxIdleConns:        10,
+				MaxIdleConnsPerHost: 10,
+				IdleConnTimeout:     90 * time.Second,
+				DisableKeepAlives:   false,
+			},
 			Timeout: 10 * time.Second,
 		},
 	}
-	bot.eventHandlers.groupMsg = make([]func(bot *Bot, msg *Message), 0)
-	bot.eventHandlers.privateMsg = make([]func(bot *Bot, msg *Message), 0)
+	bot.eventHandlers.groupMsg = make([]func(b *Bot, msg *Message), 0)
+	bot.eventHandlers.privateMsg = make([]func(b *Bot, msg *Message), 0)
 
 	bot.httpServer = &http.Server{
 		Addr:         address,
@@ -37,6 +43,40 @@ func (b *Bot) ConnectNapcat(url string) {
 	}
 	url = strings.TrimRight(url, "/")
 	b.apiEndpoint = url
+
+	// Initial handshake with retry
+	for {
+		resp, err := b.httpClient.Get(url)
+		if err != nil {
+			log.Printf("Failed to connect to NapCat: %v. Retrying in 3 seconds...", err)
+			time.Sleep(3 * time.Second)
+			continue
+		}
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("Failed to read response from NapCat: %v. Retrying in 3 seconds...", err)
+			time.Sleep(3 * time.Second)
+			continue
+		}
+
+		var cqResp cqResponse
+		if err := json.Unmarshal(body, &cqResp); err != nil {
+			log.Printf("Failed to parse response from NapCat: %v. Retrying in 3 seconds...", err)
+			time.Sleep(3 * time.Second)
+			continue
+		}
+
+		if cqResp.Status == "ok" && strings.Contains(cqResp.Message, "NapCat") {
+			log.Printf("Connected to NapCat: %s", cqResp.Message)
+			break
+		} else {
+			log.Printf("Unexpected response from NapCat: %s. Retrying in 3 seconds...", string(body))
+			time.Sleep(3 * time.Second)
+			continue
+		}
+	}
 }
 
 func (b *Bot) Run() error {
@@ -87,11 +127,27 @@ func (b *Bot) sendRequest(req *cqRequest) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	httpReq, err := http.NewRequest(http.MethodPost, b.apiEndpoint+"/"+req.Action, bytes.NewBuffer(jsonBytes))
-	if err != nil {
-		return nil, err
+
+	var resp *http.Response
+	var reqErr error
+
+	// Retry logic
+	for i := range 3 {
+		httpReq, err := http.NewRequest(http.MethodPost, b.apiEndpoint+"/"+req.Action, bytes.NewBuffer(jsonBytes))
+		if err != nil {
+			return nil, err
+		}
+		httpReq.Header.Set("Content-Type", "application/json")
+
+		resp, reqErr = b.httpClient.Do(httpReq)
+		if reqErr == nil {
+			return resp, nil
+		}
+		log.Printf("Request failed: %v. Retrying (%d/3)...", reqErr, i+1)
+		time.Sleep(1 * time.Second)
 	}
-	return b.httpClient.Do(httpReq)
+
+	return nil, reqErr
 }
 
 func (b *Bot) sendWithResponse(req *cqRequest) (*cqResponse, error) {

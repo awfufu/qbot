@@ -10,8 +10,8 @@ type Bot struct {
 	httpServer    *http.Server
 	apiEndpoint   string
 	eventHandlers struct {
-		groupMsg   []func(bot *Bot, msg *Message)
-		privateMsg []func(bot *Bot, msg *Message)
+		groupMsg   []func(b *Bot, msg *Message)
+		privateMsg []func(b *Bot, msg *Message)
 	}
 }
 

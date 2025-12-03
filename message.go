@@ -8,10 +8,9 @@ const (
 	Face    MsgType = 2
 	Image   MsgType = 3
 	Record  MsgType = 4
-	Reply   MsgType = 5
-	File    MsgType = 6
-	Forward MsgType = 7
-	Json    MsgType = 8
+	File    MsgType = 5
+	Forward MsgType = 6
+	Json    MsgType = 7
 
 	Other MsgType = -1
 )
@@ -50,12 +49,6 @@ type RecordItem struct {
 
 func (i *RecordItem) Type() MsgType { return Record }
 
-type ReplyItem struct {
-	MsgID uint64
-}
-
-func (i *ReplyItem) Type() MsgType { return Reply }
-
 type FileItem struct {
 	Data string
 }
@@ -83,6 +76,7 @@ func (i *OtherItem) Type() MsgType { return Other }
 type Message struct {
 	GroupID  uint64
 	UserID   uint64
+	ReplyID  uint64
 	Nickname string
 	Card     string
 	Role     string

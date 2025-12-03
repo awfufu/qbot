@@ -9,6 +9,8 @@ NapCat 配置：
 - 设置 HTTP 服务端，监听 `http://napcat-ip:3000`
 - 设置 HTTP 客户端，地址 `http://qbot-ip:3001`
 
+*可指定任意端口，保证二者之间能通信即可。*
+
 下面是一个 echo 示例。
 
 ```go
@@ -20,14 +22,20 @@ import (
 )
 
 func main() {
-	const MasterQQ = 114514 // 主人QQ
 	bot := qbot.NewBot("qbot-ip:3001")
 	bot.ConnectNapcat("http://napcat-ip:3000")
-	bot.GroupMsg(func(b *qbot.Bot, msg *qbot.Message) {
-		if msg.UserID == MasterQQ {
-			b.SendGroupMsg(msg.GroupID, msg.Raw)
+	bot.GroupMsg(func(msg *qbot.Message) {
+		if msg.UserID == 114514 {
+			bot.SendGroupMsg(msg.GroupID, msg.Raw)
 		}
 	})
 	log.Fatal(bot.Run())
 }
+```
+
+## run
+
+```sh
+go mod tidy
+go run main.go
 ```
