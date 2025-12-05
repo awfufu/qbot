@@ -3,7 +3,7 @@ package api
 import "encoding/json"
 
 func CanSendImage(c Client) (bool, error) {
-	data, err := c.Send("can_send_image", nil)
+	data, err := c.SendParams("can_send_image", nil)
 	if err != nil {
 		return false, err
 	}

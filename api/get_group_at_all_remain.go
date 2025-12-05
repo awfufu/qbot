@@ -6,7 +6,7 @@ func GetGroupAtAllRemain(c Client, groupID uint64) (bool, int32, int32, error) {
 	params := map[string]any{
 		"group_id": groupID,
 	}
-	data, err := c.Send("get_group_at_all_remain", params)
+	data, err := c.SendParams("get_group_at_all_remain", params)
 	if err != nil {
 		return false, 0, 0, err
 	}

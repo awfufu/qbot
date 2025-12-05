@@ -8,6 +8,6 @@ func SetProfile(c Client, nickname, company, email, college, personalNote string
 		"college":       college,
 		"personal_note": personalNote,
 	}
-	_, err := c.Send("set_qq_profile", params)
+	_, err := c.SendParams("set_qq_profile", params)
 	return err
 }

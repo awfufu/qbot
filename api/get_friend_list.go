@@ -3,7 +3,7 @@ package api
 import "encoding/json"
 
 func GetFriendList(c Client) ([]FriendInfo, error) {
-	data, err := c.Send("get_friend_list", nil)
+	data, err := c.SendParams("get_friend_list", nil)
 	if err != nil {
 		return nil, err
 	}

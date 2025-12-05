@@ -9,7 +9,7 @@ func GetGroupRootFiles(c Client, groupID uint64) (*struct {
 	params := map[string]any{
 		"group_id": groupID,
 	}
-	data, err := c.Send("get_group_root_files", params)
+	data, err := c.SendParams("get_group_root_files", params)
 	if err != nil {
 		return nil, err
 	}

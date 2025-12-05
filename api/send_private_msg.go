@@ -2,16 +2,13 @@ package api
 
 import "encoding/json"
 
-func SendPrivateMsg(c Client, userID uint64, message string, autoEscape bool) (uint64, error) {
-	if message == "" {
-		message = " "
-	}
+func SendPrivateMsg(c Client, userID uint64, message []Segment, autoEscape bool) (uint64, error) {
 	params := map[string]any{
 		"user_id":     userID,
 		"message":     message,
 		"auto_escape": autoEscape,
 	}
-	data, err := c.Send("send_private_msg", params)
+	data, err := c.SendParams("send_private_msg", params)
 	if err != nil {
 		return 0, err
 	}

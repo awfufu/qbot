@@ -6,6 +6,6 @@ func SetGroupBan(c Client, groupID uint64, userID uint64, duration int) error {
 		"user_id":  userID,
 		"duration": duration,
 	}
-	_, err := c.Send("set_group_ban", params)
+	_, err := c.SendParams("set_group_ban", params)
 	return err
 }

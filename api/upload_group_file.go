@@ -7,6 +7,6 @@ func UploadGroupFile(c Client, groupID uint64, file, name, folder string) error 
 		"name":     name,
 		"folder":   folder,
 	}
-	_, err := c.Send("upload_group_file", params)
+	_, err := c.SendParams("upload_group_file", params)
 	return err
 }

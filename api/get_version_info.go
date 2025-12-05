@@ -3,7 +3,7 @@ package api
 import "encoding/json"
 
 func GetVersionInfo(c Client) (*VersionInfo, error) {
-	data, err := c.Send("get_version_info", nil)
+	data, err := c.SendParams("get_version_info", nil)
 	if err != nil {
 		return nil, err
 	}

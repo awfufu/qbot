@@ -6,7 +6,7 @@ func GetGroupList(c Client, noCache bool) ([]GroupInfo, error) {
 	params := map[string]any{
 		"no_cache": noCache,
 	}
-	data, err := c.Send("get_group_list", params)
+	data, err := c.SendParams("get_group_list", params)
 	if err != nil {
 		return nil, err
 	}

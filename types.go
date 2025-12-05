@@ -9,15 +9,11 @@ type Bot struct {
 	httpClient    *http.Client
 	httpServer    *http.Server
 	apiEndpoint   string
+	enableDebug   bool
 	eventHandlers struct {
 		groupMsg   []func(b *Bot, msg *Message)
 		privateMsg []func(b *Bot, msg *Message)
 	}
-}
-
-type cqRequest struct {
-	Action string         `json:"action"`
-	Params map[string]any `json:"params"`
 }
 
 type cqResponse struct {

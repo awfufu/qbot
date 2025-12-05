@@ -8,7 +8,7 @@ func DownloadFile(c Client, url string, threadCount int, headers string) (string
 		"thread_count": threadCount,
 		"headers":      headers,
 	}
-	data, err := c.Send("download_file", params)
+	data, err := c.SendParams("download_file", params)
 	if err != nil {
 		return "", err
 	}

@@ -7,6 +7,6 @@ func SetGroupAddRequest(c Client, flag, subType string, approve bool, reason str
 		"approve":  approve,
 		"reason":   reason,
 	}
-	_, err := c.Send("set_group_add_request", params)
+	_, err := c.SendParams("set_group_add_request", params)
 	return err
 }

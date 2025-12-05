@@ -8,7 +8,7 @@ func GetGroupFileUrl(c Client, groupID uint64, fileID string, busid int32) (stri
 		"file_id":  fileID,
 		"busid":    busid,
 	}
-	data, err := c.Send("get_group_file_url", params)
+	data, err := c.SendParams("get_group_file_url", params)
 	if err != nil {
 		return "", err
 	}

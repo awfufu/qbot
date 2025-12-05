@@ -10,7 +10,7 @@ func GetGroupFilesByFolder(c Client, groupID uint64, folderID string) (*struct {
 		"group_id":  groupID,
 		"folder_id": folderID,
 	}
-	data, err := c.Send("get_group_files_by_folder", params)
+	data, err := c.SendParams("get_group_files_by_folder", params)
 	if err != nil {
 		return nil, err
 	}

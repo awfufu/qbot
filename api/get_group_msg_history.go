@@ -7,7 +7,7 @@ func GetGroupMsgHistory(c Client, groupID uint64, messageSeq int32) ([]MessageJs
 		"group_id":    groupID,
 		"message_seq": messageSeq,
 	}
-	data, err := c.Send("get_group_msg_history", params)
+	data, err := c.SendParams("get_group_msg_history", params)
 	if err != nil {
 		return nil, err
 	}

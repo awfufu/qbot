@@ -2,16 +2,14 @@ package api
 
 import "encoding/json"
 
-func SendGroupMsg(c Client, groupID uint64, message string, autoEscape bool) (uint64, error) {
-	if message == "" {
-		message = " "
-	}
+func SendGroupMsg(c Client, groupID uint64, message []Segment, autoEscape bool) (uint64, error) {
+
 	params := map[string]any{
 		"group_id":    groupID,
 		"message":     message,
 		"auto_escape": autoEscape,
 	}
-	data, err := c.Send("send_group_msg", params)
+	data, err := c.SendParams("send_group_msg", params)
 	if err != nil {
 		return 0, err
 	}

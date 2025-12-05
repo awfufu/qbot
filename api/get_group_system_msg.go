@@ -3,7 +3,7 @@ package api
 import "encoding/json"
 
 func GetGroupSystemMsg(c Client) (*GroupSystemMsg, error) {
-	data, err := c.Send("get_group_system_msg", nil)
+	data, err := c.SendParams("get_group_system_msg", nil)
 	if err != nil {
 		return nil, err
 	}

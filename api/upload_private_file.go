@@ -6,6 +6,6 @@ func UploadPrivateFile(c Client, userID uint64, file, name string) error {
 		"file":    file,
 		"name":    name,
 	}
-	_, err := c.Send("upload_private_file", params)
+	_, err := c.SendParams("upload_private_file", params)
 	return err
 }

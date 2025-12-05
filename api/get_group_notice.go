@@ -6,7 +6,7 @@ func GetGroupNotice(c Client, groupID uint64) ([]any, error) {
 	params := map[string]any{
 		"group_id": groupID,
 	}
-	data, err := c.Send("_get_group_notice", params)
+	data, err := c.SendParams("_get_group_notice", params)
 	if err != nil {
 		return nil, err
 	}

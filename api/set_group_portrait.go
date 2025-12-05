@@ -6,6 +6,6 @@ func SetGroupPortrait(c Client, groupID uint64, file string, cache int) error {
 		"file":     file,
 		"cache":    cache,
 	}
-	_, err := c.Send("set_group_portrait", params)
+	_, err := c.SendParams("set_group_portrait", params)
 	return err
 }

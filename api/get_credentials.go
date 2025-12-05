@@ -6,7 +6,7 @@ func GetCredentials(c Client, domain string) (*Credentials, error) {
 	params := map[string]any{
 		"domain": domain,
 	}
-	data, err := c.Send("get_credentials", params)
+	data, err := c.SendParams("get_credentials", params)
 	if err != nil {
 		return nil, err
 	}

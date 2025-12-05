@@ -6,6 +6,6 @@ func CreateGroupFileFolder(c Client, groupID uint64, name, parentID string) erro
 		"name":      name,
 		"parent_id": parentID,
 	}
-	_, err := c.Send("create_group_file_folder", params)
+	_, err := c.SendParams("create_group_file_folder", params)
 	return err
 }

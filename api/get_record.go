@@ -7,7 +7,7 @@ func GetRecord(c Client, file, outFormat string) (string, error) {
 		"file":       file,
 		"out_format": outFormat,
 	}
-	data, err := c.Send("get_record", params)
+	data, err := c.SendParams("get_record", params)
 	if err != nil {
 		return "", err
 	}

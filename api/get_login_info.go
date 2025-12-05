@@ -3,7 +3,7 @@ package api
 import "encoding/json"
 
 func GetLoginInfo(c Client) (*LoginInfo, error) {
-	data, err := c.Send("get_login_info", nil)
+	data, err := c.SendParams("get_login_info", nil)
 	if err != nil {
 		return nil, err
 	}

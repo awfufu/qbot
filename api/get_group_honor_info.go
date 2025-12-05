@@ -7,7 +7,7 @@ func GetGroupHonorInfo(c Client, groupID uint64, typeStr string) (*GroupHonorInf
 		"group_id": groupID,
 		"type":     typeStr,
 	}
-	data, err := c.Send("get_group_honor_info", params)
+	data, err := c.SendParams("get_group_honor_info", params)
 	if err != nil {
 		return nil, err
 	}

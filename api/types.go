@@ -256,3 +256,12 @@ type QiDianAccountInfo struct {
 	Account    uint64 `json:"account"`
 	Nickname   string `json:"nickname"`
 }
+
+type Segment struct {
+	Type string         `json:"type"`
+	Data map[string]any `json:"data"`
+}
+
+type News struct {
+	Text string `json:"text"`
+}

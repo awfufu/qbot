@@ -5,6 +5,6 @@ func SetModelShow(c Client, model, modelShow string) error {
 		"model":      model,
 		"model_show": modelShow,
 	}
-	_, err := c.Send("_set_model_show", params)
+	_, err := c.SendParams("_set_model_show", params)
 	return err
 }

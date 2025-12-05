@@ -3,16 +3,16 @@ package qbot
 type MsgType int
 
 const (
-	Text    MsgType = 0
-	At      MsgType = 1
-	Face    MsgType = 2
-	Image   MsgType = 3
-	Record  MsgType = 4
-	File    MsgType = 5
-	Forward MsgType = 6
-	Json    MsgType = 7
+	TextType    MsgType = 0
+	AtType      MsgType = 1
+	FaceType    MsgType = 2
+	ImageType   MsgType = 3
+	RecordType  MsgType = 4
+	FileType    MsgType = 5
+	ForwardType MsgType = 6
+	JsonType    MsgType = 7
 
-	Other MsgType = -1
+	OtherType MsgType = -1
 )
 
 type MsgItem interface {
@@ -23,55 +23,55 @@ type TextItem struct {
 	Content string
 }
 
-func (i *TextItem) Type() MsgType { return Text }
+func (i *TextItem) Type() MsgType { return TextType }
 
 type AtItem struct {
 	TargetID uint64
 }
 
-func (i *AtItem) Type() MsgType { return At }
+func (i *AtItem) Type() MsgType { return AtType }
 
 type FaceItem struct {
 	ID uint64
 }
 
-func (i *FaceItem) Type() MsgType { return Face }
+func (i *FaceItem) Type() MsgType { return FaceType }
 
 type ImageItem struct {
 	URL string
 }
 
-func (i *ImageItem) Type() MsgType { return Image }
+func (i *ImageItem) Type() MsgType { return ImageType }
 
 type RecordItem struct {
 	Path string
 }
 
-func (i *RecordItem) Type() MsgType { return Record }
+func (i *RecordItem) Type() MsgType { return RecordType }
 
 type FileItem struct {
 	Data string
 }
 
-func (i *FileItem) Type() MsgType { return File }
+func (i *FileItem) Type() MsgType { return FileType }
 
 type ForwardItem struct {
 	Data string
 }
 
-func (i *ForwardItem) Type() MsgType { return Forward }
+func (i *ForwardItem) Type() MsgType { return ForwardType }
 
 type JsonItem struct {
 	Data string
 }
 
-func (i *JsonItem) Type() MsgType { return Json }
+func (i *JsonItem) Type() MsgType { return JsonType }
 
 type OtherItem struct {
 	Data string
 }
 
-func (i *OtherItem) Type() MsgType { return Other }
+func (i *OtherItem) Type() MsgType { return OtherType }
 
 type Message struct {
 	GroupID  uint64

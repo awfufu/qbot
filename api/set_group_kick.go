@@ -6,6 +6,6 @@ func SetGroupKick(c Client, groupID uint64, userID uint64, rejectAddRequest bool
 		"user_id":            userID,
 		"reject_add_request": rejectAddRequest,
 	}
-	_, err := c.Send("set_group_kick", params)
+	_, err := c.SendParams("set_group_kick", params)
 	return err
 }

@@ -6,7 +6,7 @@ func GetForwardMsg(c Client, messageID string) ([]ForwardMsg, error) {
 	params := map[string]any{
 		"message_id": messageID,
 	}
-	data, err := c.Send("get_forward_msg", params)
+	data, err := c.SendParams("get_forward_msg", params)
 	if err != nil {
 		return nil, err
 	}

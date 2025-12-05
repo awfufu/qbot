@@ -7,7 +7,7 @@ func GetStrangerInfo(c Client, userID uint64, noCache bool) (*StrangerInfo, erro
 		"user_id":  userID,
 		"no_cache": noCache,
 	}
-	data, err := c.Send("get_stranger_info", params)
+	data, err := c.SendParams("get_stranger_info", params)
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,6 @@ func SetGroupAnonymous(c Client, groupID uint64, enable bool) error {
 		"group_id": groupID,
 		"enable":   enable,
 	}
-	_, err := c.Send("set_group_anonymous", params)
+	_, err := c.SendParams("set_group_anonymous", params)
 	return err
 }

@@ -6,7 +6,7 @@ func GetModelShow(c Client, model string) ([]ModelShow, error) {
 	params := map[string]any{
 		"model": model,
 	}
-	data, err := c.Send("_get_model_show", params)
+	data, err := c.SendParams("_get_model_show", params)
 	if err != nil {
 		return nil, err
 	}

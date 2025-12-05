@@ -6,7 +6,7 @@ func OcrImage(c Client, imageID string) (*OcrResult, error) {
 	params := map[string]any{
 		"image": imageID,
 	}
-	data, err := c.Send("ocr_image", params)
+	data, err := c.SendParams("ocr_image", params)
 	if err != nil {
 		return nil, err
 	}

@@ -6,6 +6,6 @@ func SetGroupCard(c Client, groupID uint64, userID uint64, card string) error {
 		"user_id":  userID,
 		"card":     card,
 	}
-	_, err := c.Send("set_group_card", params)
+	_, err := c.SendParams("set_group_card", params)
 	return err
 }

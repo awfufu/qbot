@@ -46,39 +46,151 @@ func (b *Bot) DeleteUnidirectionalFriend(userID uint64) error {
 	return api.DeleteUnidirectionalFriend(b, userID)
 }
 
+// Private Message APIs
+
+func (b *Bot) SendPrivateMsg(userID uint64, message ...any) (uint64, error) {
+	return api.SendPrivateMsg(b, userID, ToMessage(message...), false)
+}
+
+func (b *Bot) SendPrivateReplyMsg(userID uint64, msgID uint64, message ...any) (uint64, error) {
+	return api.SendPrivateMsg(b, userID, ToMessage(replySegment(msgID), message), false)
+}
+
+func (b *Bot) SendPrivateText(userID uint64, message string) (uint64, error) {
+	return api.SendPrivateMsg(b, userID, []api.Segment{api.Segment(Text(message))}, true)
+}
+
+func (b *Bot) SendPrivateJson(userID uint64, data string) (uint64, error) {
+	return api.SendPrivateMsg(b, userID, []api.Segment{api.Segment(Json(data))}, false)
+}
+
+func (b *Bot) SendPrivateVoice(userID uint64, file string) (uint64, error) {
+	return api.SendPrivateMsg(b, userID, []api.Segment{api.Segment(Record(file))}, false)
+}
+
+func (b *Bot) SendPrivateVideo(userID uint64, file string) (uint64, error) {
+	return api.SendPrivateMsg(b, userID, []api.Segment{api.Segment(Video(file))}, false)
+}
+
+func (b *Bot) SendPrivateMusic(userID uint64, typeStr, id string) (uint64, error) {
+	return api.SendPrivateMsg(b, userID, []api.Segment{api.Segment(Music(typeStr, id))}, false)
+}
+
+func (b *Bot) SendPrivateCustomMusic(userID uint64, url, audio, title, content, image string) (uint64, error) {
+	return api.SendPrivateMsg(b, userID, []api.Segment{api.Segment(CustomMusic(url, audio, title, content, image))}, false)
+}
+
+func (b *Bot) SendPrivateDice(userID uint64) (uint64, error) {
+	return api.SendPrivateMsg(b, userID, []api.Segment{api.Segment(Dice())}, false)
+}
+
+func (b *Bot) SendPrivateRps(userID uint64) (uint64, error) {
+	return api.SendPrivateMsg(b, userID, []api.Segment{api.Segment(Rps())}, false)
+}
+
+func (b *Bot) SendPrivateFile(userID uint64, file string) (uint64, error) {
+	return api.SendPrivateMsg(b, userID, []api.Segment{api.Segment(File(file))}, false)
+}
+
+func (b *Bot) SendPrivateForward(userID uint64, block ForwardBlock) (int32, string, error) {
+	var messages []api.Segment
+	for _, item := range block.Content {
+		content := make([]any, len(item.Content))
+		for i, s := range item.Content {
+			content[i] = s
+		}
+		messages = append(messages, api.Segment(CustomNode(item.Name, item.UserID, content...)))
+	}
+
+	var news []api.News
+	if block.Preview != "" {
+		news = append(news, api.News{Text: block.Preview})
+	}
+
+	return api.SendPrivateForwardMsg(b, userID, messages, news, block.Prompt, block.Summary, block.Title)
+}
+
+func (b *Bot) SendPrivatePoke(userID uint64) error {
+	return api.FriendPoke(b, userID)
+}
+
+func (b *Bot) ForwardMsgToPrivate(userID uint64, messageID string) (uint64, error) {
+	return api.ForwardFriendSingleMsg(b, userID, messageID)
+}
+
+// Group Message APIs
+
+func (b *Bot) SendGroupMsg(groupID uint64, message ...any) (uint64, error) {
+	return api.SendGroupMsg(b, groupID, ToMessage(message...), false)
+}
+
+func (b *Bot) SendGroupReplyMsg(groupID uint64, msgID uint64, message ...any) (uint64, error) {
+	return api.SendGroupMsg(b, groupID, ToMessage(replySegment(msgID), message), false)
+}
+
+func (b *Bot) SendGroupText(groupID uint64, message string) (uint64, error) {
+	return api.SendGroupMsg(b, groupID, []api.Segment{api.Segment(Text(message))}, true)
+}
+
+func (b *Bot) SendGroupJson(groupID uint64, data string) (uint64, error) {
+	return api.SendGroupMsg(b, groupID, []api.Segment{api.Segment(Json(data))}, false)
+}
+
+func (b *Bot) SendGroupVoice(groupID uint64, file string) (uint64, error) {
+	return api.SendGroupMsg(b, groupID, []api.Segment{api.Segment(Record(file))}, false)
+}
+
+func (b *Bot) SendGroupVideo(groupID uint64, file string) (uint64, error) {
+	return api.SendGroupMsg(b, groupID, []api.Segment{api.Segment(Video(file))}, false)
+}
+
+func (b *Bot) SendGroupMusic(groupID uint64, typeStr, id string) (uint64, error) {
+	return api.SendGroupMsg(b, groupID, []api.Segment{api.Segment(Music(typeStr, id))}, false)
+}
+
+func (b *Bot) SendGroupCustomMusic(groupID uint64, url, audio, title, content, image string) (uint64, error) {
+	return api.SendGroupMsg(b, groupID, []api.Segment{api.Segment(CustomMusic(url, audio, title, content, image))}, false)
+}
+
+func (b *Bot) SendGroupDice(groupID uint64) (uint64, error) {
+	return api.SendGroupMsg(b, groupID, []api.Segment{api.Segment(Dice())}, false)
+}
+
+func (b *Bot) SendGroupRps(groupID uint64) (uint64, error) {
+	return api.SendGroupMsg(b, groupID, []api.Segment{api.Segment(Rps())}, false)
+}
+
+func (b *Bot) SendGroupFile(groupID uint64, file string) (uint64, error) {
+	return api.SendGroupMsg(b, groupID, []api.Segment{api.Segment(File(file))}, false)
+}
+
+func (b *Bot) SendGroupForward(groupID uint64, block ForwardBlock) (int32, string, error) {
+	var messages []api.Segment
+	for _, item := range block.Content {
+		content := make([]any, len(item.Content))
+		for i, s := range item.Content {
+			content[i] = s
+		}
+		messages = append(messages, api.Segment(CustomNode(item.Name, item.UserID, content...)))
+	}
+
+	var news []api.News
+	if block.Preview != "" {
+		news = append(news, api.News{Text: block.Preview})
+	}
+
+	return api.SendGroupForwardMsg(b, groupID, messages, news, block.Prompt, block.Summary, block.Title)
+}
+
+func (b *Bot) SendGroupPoke(groupID uint64, userID uint64) error {
+	return api.GroupPoke(b, groupID, userID)
+}
+
+func (b *Bot) ForwardMsgToGroup(messageID string, groupID uint64) (uint64, error) {
+	return api.ForwardGroupSingleMsg(b, groupID, messageID)
+}
+
 // Message APIs
-
-func (b *Bot) SendPrivateMsg(userID uint64, message string) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, message, false)
-}
-
-func (b *Bot) SendPrivateTextMsg(userID uint64, message string) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, message, true)
-}
-
-func (b *Bot) SendGroupMsg(groupID uint64, message string) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, message, false)
-}
-
-func (b *Bot) SendGroupTextMsg(groupID uint64, message string) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, message, true)
-}
-
-func (b *Bot) SendMsg(groupID uint64, userID uint64, message string) (int32, error) {
-	if groupID == 0 {
-		return api.SendMsg(b, "private", userID, groupID, message, false)
-	} else {
-		return api.SendMsg(b, "group", userID, groupID, message, false)
-	}
-}
-
-func (b *Bot) SendTextMsg(groupID uint64, userID uint64, message string) (int32, error) {
-	if groupID == 0 {
-		return api.SendMsg(b, "private", userID, groupID, message, true)
-	} else {
-		return api.SendMsg(b, "group", userID, groupID, message, true)
-	}
-}
 
 func (b *Bot) GetMsg(messageID int32) (*api.MessageJson, error) {
 	return api.GetMsg(b, messageID)
@@ -94,14 +206,6 @@ func (b *Bot) MarkMsgAsRead(messageID int32) error {
 
 func (b *Bot) GetForwardMsg(messageID string) ([]api.ForwardMsg, error) {
 	return api.GetForwardMsg(b, messageID)
-}
-
-func (b *Bot) SendGroupForwardMsg(groupID uint64, messages []any) (int32, error) {
-	return api.SendGroupForwardMsg(b, groupID, messages)
-}
-
-func (b *Bot) SendPrivateForwardMsg(userID uint64, messages []any) (int32, error) {
-	return api.SendPrivateForwardMsg(b, userID, messages)
 }
 
 func (b *Bot) GetGroupMsgHistory(groupID uint64, messageSeq int32) ([]api.MessageJson, error) {

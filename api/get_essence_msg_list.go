@@ -6,7 +6,7 @@ func GetEssenceMsgList(c Client, groupID uint64) ([]EssenceMsg, error) {
 	params := map[string]any{
 		"group_id": groupID,
 	}
-	data, err := c.Send("get_essence_msg_list", params)
+	data, err := c.SendParams("get_essence_msg_list", params)
 	if err != nil {
 		return nil, err
 	}

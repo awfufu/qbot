@@ -7,7 +7,7 @@ func GetGroupMemberList(c Client, groupID uint64, noCache bool) ([]GroupMemberIn
 		"group_id": groupID,
 		"no_cache": noCache,
 	}
-	data, err := c.Send("get_group_member_list", params)
+	data, err := c.SendParams("get_group_member_list", params)
 	if err != nil {
 		return nil, err
 	}

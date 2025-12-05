@@ -3,7 +3,7 @@ package api
 import "encoding/json"
 
 func CanSendRecord(c Client) (bool, error) {
-	data, err := c.Send("can_send_record", nil)
+	data, err := c.SendParams("can_send_record", nil)
 	if err != nil {
 		return false, err
 	}

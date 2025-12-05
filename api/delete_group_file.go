@@ -6,6 +6,6 @@ func DeleteGroupFile(c Client, groupID uint64, fileID string, busid int32) error
 		"file_id":  fileID,
 		"busid":    busid,
 	}
-	_, err := c.Send("delete_group_file", params)
+	_, err := c.SendParams("delete_group_file", params)
 	return err
 }

@@ -6,7 +6,7 @@ func GetCookies(c Client, domain string) (string, error) {
 	params := map[string]any{
 		"domain": domain,
 	}
-	data, err := c.Send("get_cookies", params)
+	data, err := c.SendParams("get_cookies", params)
 	if err != nil {
 		return "", err
 	}

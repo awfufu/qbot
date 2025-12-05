@@ -6,7 +6,7 @@ func CheckUrlSafely(c Client, url string) (int32, error) {
 	params := map[string]any{
 		"url": url,
 	}
-	data, err := c.Send("check_url_safely", params)
+	data, err := c.SendParams("check_url_safely", params)
 	if err != nil {
 		return 0, err
 	}
