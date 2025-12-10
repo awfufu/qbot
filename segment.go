@@ -159,7 +159,7 @@ func CustomNode(name string, uin uint64, content ...any) Segment {
 	}
 }
 
-// creates a replySegment segment
+// creates a reply segment
 func replySegment(msgID uint64) Segment {
 	return Segment{
 		Type: "reply",

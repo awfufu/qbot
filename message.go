@@ -73,15 +73,39 @@ type OtherItem struct {
 
 func (i *OtherItem) Type() MsgType { return OtherType }
 
+type ChatType int8
+
+const (
+	Private ChatType = 1
+	Group   ChatType = 2
+
+	OtherChat ChatType = 0
+)
+
+type GroupRole int8
+
+const (
+	GroupMember GroupRole = 1
+	GroupAdmin  GroupRole = 2
+	GroupOwner  GroupRole = 3
+
+	NotAGroup GroupRole = 0
+)
+
 type Message struct {
-	GroupID  uint64
-	UserID   uint64
-	ReplyID  uint64
-	Nickname string
-	Card     string
-	Role     string
-	Time     uint64
+	ChatType ChatType // enum: Private, Group
 	MsgID    uint64
-	Raw      string
-	Array    []MsgItem
+	ReplyID  uint64
+	UserID   uint64
+	Name     string
+	Time     uint64
+
+	// group
+	GroupID   uint64    // = 0  if msg from private
+	GroupCard string    // = "" if msg from private
+	GroupRole GroupRole // = NotAGroup if msg from private
+
+	// content
+	Raw   string
+	Array []MsgItem
 }

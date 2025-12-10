@@ -53,7 +53,8 @@ func (b *Bot) SendPrivateMsg(userID uint64, message ...any) (uint64, error) {
 }
 
 func (b *Bot) SendPrivateReplyMsg(userID uint64, msgID uint64, message ...any) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, ToMessage(replySegment(msgID), message), false)
+	fullMessage := append([]any{replySegment(msgID)}, message...)
+	return api.SendPrivateMsg(b, userID, ToMessage(fullMessage...), false)
 }
 
 func (b *Bot) SendPrivateText(userID uint64, message string) (uint64, error) {
@@ -125,7 +126,8 @@ func (b *Bot) SendGroupMsg(groupID uint64, message ...any) (uint64, error) {
 }
 
 func (b *Bot) SendGroupReplyMsg(groupID uint64, msgID uint64, message ...any) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, ToMessage(replySegment(msgID), message), false)
+	fullMessage := append([]any{replySegment(msgID)}, message...)
+	return api.SendGroupMsg(b, groupID, ToMessage(fullMessage...), false)
 }
 
 func (b *Bot) SendGroupText(groupID uint64, message string) (uint64, error) {

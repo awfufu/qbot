@@ -10,35 +10,47 @@ import (
 
 func (b *Bot) handleEvents(postType *string, msgStr *[]byte, jsonMap *map[string]any) {
 	switch *postType {
-	case "meta_event":
-		// heartbeat, connection state..
 	case "notice":
-		// TODO
 		switch (*jsonMap)["notice_type"] {
+		case "group_msg_emoji_like":
+			notice := &api.EmojiLikeNotice{}
+			if json.Unmarshal(*msgStr, notice) == nil {
+				for _, handler := range b.eventHandlers.emojiLike {
+					handler(b, notice)
+				}
+			}
 		case "group_recall":
-			// TODO
+			notice := &api.GroupRecallNotice{}
+			if json.Unmarshal(*msgStr, notice) == nil {
+				for _, handler := range b.eventHandlers.groupRecall {
+					handler(b, notice)
+				}
+			}
+		case "friend_recall":
+			notice := &api.FriendRecallNotice{}
+			if json.Unmarshal(*msgStr, notice) == nil {
+				for _, handler := range b.eventHandlers.friendRecall {
+					handler(b, notice)
+				}
+			}
+		case "notify":
+			if (*jsonMap)["sub_type"] == "poke" {
+				notice := &api.PokeNotify{}
+				if json.Unmarshal(*msgStr, notice) == nil {
+					for _, handler := range b.eventHandlers.poke {
+						handler(b, notice)
+					}
+				}
+			}
 		}
 	case "message":
-		switch (*jsonMap)["message_type"] {
-		case "private":
-			msgJson := &api.MessageJson{}
-			if json.Unmarshal(*msgStr, msgJson) != nil {
-				return
-			}
-			if msg := parseMsgJson(msgJson); msg != nil {
-				for _, handler := range b.eventHandlers.privateMsg {
-					handler(b, msg)
-				}
-			}
-		case "group":
-			msgJson := &api.MessageJson{}
-			if json.Unmarshal(*msgStr, msgJson) != nil {
-				return
-			}
-			if msg := parseMsgJson(msgJson); msg != nil {
-				for _, handler := range b.eventHandlers.groupMsg {
-					handler(b, msg)
-				}
+		msgJson := &api.MessageJson{}
+		if json.Unmarshal(*msgStr, msgJson) != nil {
+			return
+		}
+		if msg := parseMsgJson(msgJson); msg != nil {
+			for _, handler := range b.eventHandlers.message {
+				handler(b, msg)
 			}
 		}
 	}
@@ -48,17 +60,40 @@ func parseMsgJson(raw *api.MessageJson) *Message {
 	if raw == nil {
 		return nil
 	}
+
 	result := Message{
-		GroupID:  raw.GroupID,
-		UserID:   raw.Sender.UserID,
-		ReplyID:  0,
-		Nickname: raw.Sender.Nickname,
-		Card:     raw.Sender.Card,
-		Role:     raw.Sender.Role,
-		Time:     raw.Time,
-		MsgID:    raw.MessageID,
-		Raw:      raw.RawMessage,
+		MsgID:   raw.MessageID,
+		UserID:  raw.Sender.UserID,
+		GroupID: raw.GroupID,
+		Name:    raw.Sender.Nickname,
+		Time:    raw.Time,
+		Raw:     raw.RawMessage,
 	}
+
+	if raw.Sender.Card != "" {
+		result.GroupCard = raw.Sender.Card
+	}
+
+	switch raw.MessageType {
+	case "private":
+		result.ChatType = Private
+	case "group":
+		result.ChatType = Group
+	default:
+		result.ChatType = OtherChat
+	}
+
+	switch raw.Sender.Role {
+	case "owner":
+		result.GroupRole = GroupOwner
+	case "admin":
+		result.GroupRole = GroupAdmin
+	case "member":
+		result.GroupRole = GroupMember
+	default:
+		result.GroupRole = NotAGroup
+	}
+
 	for _, msg := range raw.Message {
 		var jsonData map[string]any
 		if err := json.Unmarshal(msg.Data, &jsonData); err != nil {

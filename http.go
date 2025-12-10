@@ -10,6 +10,14 @@ import (
 	"time"
 )
 
+type cqResponse struct {
+	Status  string          `json:"status"`
+	Retcode int             `json:"retcode"`
+	Data    json.RawMessage `json:"data"`
+	Message string          `json:"message"`
+	Wording string          `json:"wording"`
+}
+
 // Send raw parameters to NapCat
 func (b *Bot) SendParams(action string, params map[string]any) (json.RawMessage, error) {
 	if b.enableDebug {
@@ -95,6 +103,13 @@ func (b *Bot) handleHttpEvent(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	logJson, err := json.MarshalIndent(jsonMap, "", "  ")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	log.Println(string(logJson))
 
 	if postType, exists := jsonMap["post_type"]; exists {
 		if str, ok := postType.(string); ok && str != "" {

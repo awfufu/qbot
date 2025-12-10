@@ -3,10 +3,11 @@ package api
 import "encoding/json"
 
 type MessageJson struct {
-	GroupID   uint64 `json:"group_id"`
-	Time      uint64 `json:"time"`
-	MessageID uint64 `json:"message_id"`
-	Sender    struct {
+	GroupID     uint64 `json:"group_id"`
+	Time        uint64 `json:"time"`
+	MessageID   uint64 `json:"message_id"`
+	MessageType string `json:"message_type"`
+	Sender      struct {
 		UserID   uint64 `json:"user_id"`
 		Nickname string `json:"nickname"`
 		Card     string `json:"card"`
@@ -264,4 +265,37 @@ type Segment struct {
 
 type News struct {
 	Text string `json:"text"`
+}
+
+type EmojiLikeNotice struct {
+	GroupID   uint64 `json:"group_id"`
+	UserID    uint64 `json:"user_id"`
+	MessageID uint64 `json:"message_id"`
+	IsAdd     bool   `json:"is_add"`
+	Likes     []struct {
+		Count   int32  `json:"count"`
+		EmojiID string `json:"emoji_id"`
+	} `json:"likes"`
+}
+
+type GroupRecallNotice struct {
+	GroupID    uint64 `json:"group_id"`
+	UserID     uint64 `json:"user_id"`
+	OperatorID uint64 `json:"operator_id"`
+	MessageID  uint64 `json:"message_id"`
+	Time       int64  `json:"time"`
+}
+
+type FriendRecallNotice struct {
+	UserID    uint64 `json:"user_id"`
+	MessageID uint64 `json:"message_id"`
+	Time      int64  `json:"time"`
+}
+
+type PokeNotify struct {
+	GroupID  uint64 `json:"group_id"`
+	UserID   uint64 `json:"user_id"`   // Sender
+	TargetID uint64 `json:"target_id"` // Receiver
+	SubType  string `json:"sub_type"`
+	RawInfo  any    `json:"raw_info"`
 }
