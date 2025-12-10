@@ -278,18 +278,12 @@ type EmojiLikeNotice struct {
 	} `json:"likes"`
 }
 
-type GroupRecallNotice struct {
+type RecallNotice struct {
 	GroupID    uint64 `json:"group_id"`
 	UserID     uint64 `json:"user_id"`
 	OperatorID uint64 `json:"operator_id"`
 	MessageID  uint64 `json:"message_id"`
 	Time       int64  `json:"time"`
-}
-
-type FriendRecallNotice struct {
-	UserID    uint64 `json:"user_id"`
-	MessageID uint64 `json:"message_id"`
-	Time      int64  `json:"time"`
 }
 
 type PokeNotify struct {

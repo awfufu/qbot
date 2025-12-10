@@ -22,16 +22,9 @@ func (b *Bot) handleEvents(postType *string, msgStr *[]byte, jsonMap *map[string
 				}
 			}
 		case "group_recall":
-			notice := &api.GroupRecallNotice{}
-			if json.Unmarshal(*msgStr, notice) == nil {
-				if n := parseRecallNotice(notice); n != nil {
-					for _, handler := range b.eventHandlers.recall {
-						handler(b, n)
-					}
-				}
-			}
+			fallthrough
 		case "friend_recall":
-			notice := &api.FriendRecallNotice{}
+			notice := &api.RecallNotice{}
 			if json.Unmarshal(*msgStr, notice) == nil {
 				if n := parseRecallNotice(notice); n != nil {
 					for _, handler := range b.eventHandlers.recall {
@@ -185,51 +178,43 @@ func parseMsgJson(raw *api.MessageJson) *Message {
 	return &result
 }
 
-func parseEmojiLikeNotice(raw *api.EmojiLikeNotice) *EmojiLikeNotice {
-	if raw == nil {
+func parseEmojiLikeNotice(raw *api.EmojiLikeNotice) *EmojiReaction {
+	if raw == nil || len(raw.Likes) == 0 {
 		return nil
 	}
-	notice := &EmojiLikeNotice{
+
+	notice := &EmojiReaction{
 		GroupID:   raw.GroupID,
 		UserID:    raw.UserID,
 		MessageID: raw.MessageID,
 		IsAdd:     raw.IsAdd,
+		Count:     raw.Likes[0].Count,
 	}
-	for _, like := range raw.Likes {
-		notice.Likes = append(notice.Likes, &EmojiLikeItem{
-			Count:   like.Count,
-			EmojiID: like.EmojiID,
-		})
+
+	id, err := strconv.ParseUint(raw.Likes[0].EmojiID, 10, 64)
+	if err != nil {
+		return nil
 	}
+
+	if id < 1000 {
+		notice.IsQFace = true
+		notice.FaceID = id
+	} else {
+		notice.IsQFace = false
+		notice.EmojiRune = rune(id)
+	}
+
 	return notice
 }
 
-func parseRecallNotice(raw any) *RecallNotice {
-	switch v := raw.(type) {
-	case *api.GroupRecallNotice:
-		if v == nil {
-			return nil
-		}
-		return &RecallNotice{
-			ChatType:   Group,
-			GroupID:    v.GroupID,
-			UserID:     v.UserID,
-			OperatorID: v.OperatorID,
-			MessageID:  v.MessageID,
-			Time:       v.Time,
-		}
-	case *api.FriendRecallNotice:
-		if v == nil {
-			return nil
-		}
-		return &RecallNotice{
-			ChatType:  Private,
-			UserID:    v.UserID,
-			MessageID: v.MessageID,
-			Time:      v.Time,
-		}
-	default:
-		return nil
+func parseRecallNotice(raw *api.RecallNotice) *RecallNotice {
+	return &RecallNotice{
+		ChatType:   Group,
+		GroupID:    raw.GroupID,
+		UserID:     raw.UserID,
+		OperatorID: raw.OperatorID,
+		MessageID:  raw.MessageID,
+		Time:       raw.Time,
 	}
 }
 

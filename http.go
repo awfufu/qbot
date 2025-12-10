@@ -20,14 +20,6 @@ type cqResponse struct {
 
 // Send raw parameters to NapCat
 func (b *Bot) SendParams(action string, params map[string]any) (json.RawMessage, error) {
-	if b.enableDebug {
-		log.Println()
-		jsonBytes, err := json.Marshal(params)
-		if err != nil {
-			return nil, err
-		}
-		log.Printf("[Debug] qbot.SendParams: %s\n%s", action, string(jsonBytes))
-	}
 	resp, err := b.sendHttpRequest(action, params)
 	if err != nil {
 		return nil, err
@@ -73,10 +65,6 @@ func (b *Bot) sendHttpRequest(action string, params map[string]any) (*cqResponse
 		return nil, err
 	}
 
-	if b.enableDebug {
-		log.Printf("[Debug] %s: %s\n%s", action, httpResp.Status, string(body))
-	}
-
 	var cqResp cqResponse
 	if err := json.Unmarshal(body, &cqResp); err != nil {
 		return nil, err
@@ -103,13 +91,6 @@ func (b *Bot) handleHttpEvent(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	logJson, err := json.MarshalIndent(jsonMap, "", "  ")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	log.Println(string(logJson))
 
 	if postType, exists := jsonMap["post_type"]; exists {
 		if str, ok := postType.(string); ok && str != "" {

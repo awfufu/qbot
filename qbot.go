@@ -16,7 +16,7 @@ type Bot struct {
 	enableDebug   bool
 	eventHandlers struct {
 		message   []func(b *Bot, msg *Message)
-		emojiLike []func(b *Bot, msg *EmojiLikeNotice)
+		emojiLike []func(b *Bot, msg *EmojiReaction)
 		recall    []func(b *Bot, msg *RecallNotice)
 		poke      []func(b *Bot, msg *PokeNotify)
 	}
@@ -35,7 +35,7 @@ func NewBot(address string) *Bot {
 		},
 	}
 	bot.eventHandlers.message = make([]func(b *Bot, msg *Message), 0)
-	bot.eventHandlers.emojiLike = make([]func(b *Bot, msg *EmojiLikeNotice), 0)
+	bot.eventHandlers.emojiLike = make([]func(b *Bot, msg *EmojiReaction), 0)
 	bot.eventHandlers.recall = make([]func(b *Bot, msg *RecallNotice), 0)
 	bot.eventHandlers.poke = make([]func(b *Bot, msg *PokeNotify), 0)
 
@@ -103,15 +103,15 @@ func (b *Bot) OnMessage(handler func(b *Bot, msg *Message)) {
 	b.eventHandlers.message = append(b.eventHandlers.message, handler)
 }
 
-func (b *Bot) OnEmojiLike(handler func(b *Bot, msg *EmojiLikeNotice)) {
+func (b *Bot) OnEmojiReaction(handler func(b *Bot, emoji *EmojiReaction)) {
 	b.eventHandlers.emojiLike = append(b.eventHandlers.emojiLike, handler)
 }
 
-func (b *Bot) OnRecall(handler func(b *Bot, msg *RecallNotice)) {
+func (b *Bot) OnRecall(handler func(b *Bot, recall *RecallNotice)) {
 	b.eventHandlers.recall = append(b.eventHandlers.recall, handler)
 }
 
-func (b *Bot) OnPoke(handler func(b *Bot, msg *PokeNotify)) {
+func (b *Bot) OnPoke(handler func(b *Bot, poke *PokeNotify)) {
 	b.eventHandlers.poke = append(b.eventHandlers.poke, handler)
 }
 

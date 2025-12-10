@@ -3,16 +3,16 @@ package qbot
 type MsgType int
 
 const (
-	TextType    MsgType = 0
-	AtType      MsgType = 1
-	FaceType    MsgType = 2
-	ImageType   MsgType = 3
-	RecordType  MsgType = 4
-	FileType    MsgType = 5
-	ForwardType MsgType = 6
-	JsonType    MsgType = 7
+	TextType    MsgType = 1
+	AtType      MsgType = 2
+	FaceType    MsgType = 3
+	ImageType   MsgType = 4
+	RecordType  MsgType = 5
+	FileType    MsgType = 6
+	ForwardType MsgType = 7
+	JsonType    MsgType = 8
 
-	OtherType MsgType = -1
+	OtherType MsgType = 0
 )
 
 type MsgItem interface {
@@ -112,15 +112,18 @@ type Message struct {
 
 type EmojiLikeItem struct {
 	Count   int32
-	EmojiID string
+	EmojiID uint64
 }
 
-type EmojiLikeNotice struct {
+type EmojiReaction struct {
 	GroupID   uint64
 	UserID    uint64
 	MessageID uint64
 	IsAdd     bool
-	Likes     []*EmojiLikeItem
+	IsQFace   bool
+	Count     int32
+	FaceID    uint64
+	EmojiRune rune
 }
 
 type RecallNotice struct {
