@@ -1,6 +1,10 @@
 package qbot
 
-import "github.com/awfufu/qbot/api"
+import (
+	"fmt"
+
+	"github.com/awfufu/qbot/api"
+)
 
 // Bot Account APIs
 
@@ -44,6 +48,165 @@ func (b *Bot) DeleteFriend(userID uint64) error {
 
 func (b *Bot) DeleteUnidirectionalFriend(userID uint64) error {
 	return api.DeleteUnidirectionalFriend(b, userID)
+}
+
+// Unified Message APIs
+
+func (b *Bot) SendMsg(chatType ChatType, targetID uint64, message ...any) (uint64, error) {
+	switch chatType {
+	case Private:
+		return b.SendPrivateMsg(targetID, message...)
+	case Group:
+		return b.SendGroupMsg(targetID, message...)
+	default:
+		return 0, fmt.Errorf("unknown chat type: %d", chatType)
+	}
+}
+
+func (b *Bot) SendReplyMsg(chatType ChatType, targetID, msgID uint64, message ...any) (uint64, error) {
+	switch chatType {
+	case Private:
+		return b.SendPrivateReplyMsg(targetID, msgID, message...)
+	case Group:
+		return b.SendGroupReplyMsg(targetID, msgID, message...)
+	default:
+		return 0, fmt.Errorf("unknown chat type: %d", chatType)
+	}
+}
+
+func (b *Bot) SendText(chatType ChatType, targetID uint64, message string) (uint64, error) {
+	switch chatType {
+	case Private:
+		return b.SendPrivateText(targetID, message)
+	case Group:
+		return b.SendGroupText(targetID, message)
+	default:
+		return 0, fmt.Errorf("unknown chat type: %d", chatType)
+	}
+}
+
+func (b *Bot) SendJson(chatType ChatType, targetID uint64, data string) (uint64, error) {
+	switch chatType {
+	case Private:
+		return b.SendPrivateJson(targetID, data)
+	case Group:
+		return b.SendGroupJson(targetID, data)
+	default:
+		return 0, fmt.Errorf("unknown chat type: %d", chatType)
+	}
+}
+
+func (b *Bot) SendVoice(chatType ChatType, targetID uint64, file string) (uint64, error) {
+	switch chatType {
+	case Private:
+		return b.SendPrivateVoice(targetID, file)
+	case Group:
+		return b.SendGroupVoice(targetID, file)
+	default:
+		return 0, fmt.Errorf("unknown chat type: %d", chatType)
+	}
+}
+
+func (b *Bot) SendVideo(chatType ChatType, targetID uint64, file string) (uint64, error) {
+	switch chatType {
+	case Private:
+		return b.SendPrivateVideo(targetID, file)
+	case Group:
+		return b.SendGroupVideo(targetID, file)
+	default:
+		return 0, fmt.Errorf("unknown chat type: %d", chatType)
+	}
+}
+
+func (b *Bot) SendMusic(chatType ChatType, targetID uint64, typeStr, id string) (uint64, error) {
+	switch chatType {
+	case Private:
+		return b.SendPrivateMusic(targetID, typeStr, id)
+	case Group:
+		return b.SendGroupMusic(targetID, typeStr, id)
+	default:
+		return 0, fmt.Errorf("unknown chat type: %d", chatType)
+	}
+}
+
+func (b *Bot) SendCustomMusic(chatType ChatType, targetID uint64, url, audio, title, content, image string) (uint64, error) {
+	switch chatType {
+	case Private:
+		return b.SendPrivateCustomMusic(targetID, url, audio, title, content, image)
+	case Group:
+		return b.SendGroupCustomMusic(targetID, url, audio, title, content, image)
+	default:
+		return 0, fmt.Errorf("unknown chat type: %d", chatType)
+	}
+}
+
+func (b *Bot) SendDice(chatType ChatType, targetID uint64) (uint64, error) {
+	switch chatType {
+	case Private:
+		return b.SendPrivateDice(targetID)
+	case Group:
+		return b.SendGroupDice(targetID)
+	default:
+		return 0, fmt.Errorf("unknown chat type: %d", chatType)
+	}
+}
+
+func (b *Bot) SendRps(chatType ChatType, targetID uint64) (uint64, error) {
+	switch chatType {
+	case Private:
+		return b.SendPrivateRps(targetID)
+	case Group:
+		return b.SendGroupRps(targetID)
+	default:
+		return 0, fmt.Errorf("unknown chat type: %d", chatType)
+	}
+}
+
+func (b *Bot) SendFile(chatType ChatType, targetID uint64, file string) (uint64, error) {
+	switch chatType {
+	case Private:
+		return b.SendPrivateFile(targetID, file)
+	case Group:
+		return b.SendGroupFile(targetID, file)
+	default:
+		return 0, fmt.Errorf("unknown chat type: %d", chatType)
+	}
+}
+
+func (b *Bot) SendForward(chatType ChatType, targetID uint64, block ForwardBlock) (int32, string, error) {
+	var messages []api.Segment
+	for _, item := range block.Content {
+		content := make([]any, len(item.Content))
+		for i, s := range item.Content {
+			content[i] = s
+		}
+		messages = append(messages, api.Segment(CustomNode(item.Name, item.UserID, content...)))
+	}
+
+	var news []api.News
+	if block.Preview != "" {
+		news = append(news, api.News{Text: block.Preview})
+	}
+
+	switch chatType {
+	case Private:
+		return api.SendPrivateForwardMsg(b, targetID, messages, news, block.Prompt, block.Summary, block.Title)
+	case Group:
+		return api.SendGroupForwardMsg(b, targetID, messages, news, block.Prompt, block.Summary, block.Title)
+	default:
+		return 0, "", fmt.Errorf("unknown chat type: %d", chatType)
+	}
+}
+
+func (b *Bot) ForwardMsg(chatType ChatType, targetID uint64, messageID string) (uint64, error) {
+	switch chatType {
+	case Private:
+		return b.ForwardMsgToPrivate(targetID, messageID)
+	case Group:
+		return b.ForwardMsgToGroup(messageID, targetID)
+	default:
+		return 0, fmt.Errorf("unknown chat type: %d", chatType)
+	}
 }
 
 // Private Message APIs
@@ -94,21 +257,7 @@ func (b *Bot) SendPrivateFile(userID uint64, file string) (uint64, error) {
 }
 
 func (b *Bot) SendPrivateForward(userID uint64, block ForwardBlock) (int32, string, error) {
-	var messages []api.Segment
-	for _, item := range block.Content {
-		content := make([]any, len(item.Content))
-		for i, s := range item.Content {
-			content[i] = s
-		}
-		messages = append(messages, api.Segment(CustomNode(item.Name, item.UserID, content...)))
-	}
-
-	var news []api.News
-	if block.Preview != "" {
-		news = append(news, api.News{Text: block.Preview})
-	}
-
-	return api.SendPrivateForwardMsg(b, userID, messages, news, block.Prompt, block.Summary, block.Title)
+	return b.SendForward(Private, userID, block)
 }
 
 func (b *Bot) SendPrivatePoke(userID uint64) error {
@@ -167,21 +316,7 @@ func (b *Bot) SendGroupFile(groupID uint64, file string) (uint64, error) {
 }
 
 func (b *Bot) SendGroupForward(groupID uint64, block ForwardBlock) (int32, string, error) {
-	var messages []api.Segment
-	for _, item := range block.Content {
-		content := make([]any, len(item.Content))
-		for i, s := range item.Content {
-			content[i] = s
-		}
-		messages = append(messages, api.Segment(CustomNode(item.Name, item.UserID, content...)))
-	}
-
-	var news []api.News
-	if block.Preview != "" {
-		news = append(news, api.News{Text: block.Preview})
-	}
-
-	return api.SendGroupForwardMsg(b, groupID, messages, news, block.Prompt, block.Summary, block.Title)
+	return b.SendForward(Group, groupID, block)
 }
 
 func (b *Bot) SendGroupPoke(groupID uint64, userID uint64) error {
