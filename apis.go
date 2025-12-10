@@ -371,6 +371,10 @@ func (b *Bot) CanSendRecord() (bool, error) {
 	return api.CanSendRecord(b)
 }
 
+func (b *Bot) SendEmojiReaction(messageID uint64, emojiID uint64, set bool) error {
+	return api.SetMsgEmojiLike(b, messageID, emojiID, set)
+}
+
 // Request APIs
 
 func (b *Bot) SetFriendAddRequest(flag string, approve bool, remark string) error {

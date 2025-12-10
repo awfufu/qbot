@@ -13,7 +13,6 @@ type Bot struct {
 	httpClient    *http.Client
 	httpServer    *http.Server
 	apiEndpoint   string
-	enableDebug   bool
 	eventHandlers struct {
 		message   []func(b *Bot, msg *Message)
 		emojiLike []func(b *Bot, msg *EmojiReaction)
@@ -113,8 +112,4 @@ func (b *Bot) OnRecall(handler func(b *Bot, recall *RecallNotice)) {
 
 func (b *Bot) OnPoke(handler func(b *Bot, poke *PokeNotify)) {
 	b.eventHandlers.poke = append(b.eventHandlers.poke, handler)
-}
-
-func (b *Bot) Debug(status bool) {
-	b.enableDebug = status
 }

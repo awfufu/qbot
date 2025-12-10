@@ -1,7 +1,5 @@
 package qbot
 
-import "strconv"
-
 var qfaceMap = map[int]string{
 	0:   "惊讶",
 	1:   "撇嘴",
@@ -185,12 +183,9 @@ var qfaceMap = map[int]string{
 	395: "略略略",
 }
 
-func GetQFaceNameByStrID(id string) string {
-	if idn, err := strconv.Atoi(id); err == nil {
-		if found, exists := qfaceMap[idn]; exists {
-			return found
-		}
-		return id
+func GetQFaceName(id int) string {
+	if found, exists := qfaceMap[id]; exists {
+		return found
 	}
 	return ""
 }

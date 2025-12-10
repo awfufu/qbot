@@ -195,10 +195,10 @@ func parseEmojiLikeNotice(raw *api.EmojiLikeNotice) *EmojiReaction {
 	if err != nil {
 		return nil
 	}
+	notice.FaceID = id
 
 	if id < 1000 {
 		notice.IsQFace = true
-		notice.FaceID = id
 	} else {
 		notice.IsQFace = false
 		notice.EmojiRune = rune(id)
@@ -222,10 +222,34 @@ func parsePokeNotify(raw *api.PokeNotify) *PokeNotify {
 	if raw == nil {
 		return nil
 	}
-	return &PokeNotify{
+	notify := &PokeNotify{
+		ChatType: Group,
 		GroupID:  raw.GroupID,
-		UserID:   raw.UserID,
+		SenderID: raw.UserID,
 		TargetID: raw.TargetID,
-		SubType:  raw.SubType,
 	}
+
+	if notify.GroupID == 0 {
+		notify.ChatType = Private
+	}
+
+	if list, ok := raw.RawInfo.([]any); ok {
+		var txts []string
+		for _, item := range list {
+			if m, ok := item.(map[string]any); ok {
+				if v, ok := m["txt"]; ok {
+					if s, ok := v.(string); ok {
+						txts = append(txts, s)
+					}
+				}
+			}
+		}
+		if len(txts) > 0 {
+			notify.Action = txts[0]
+		}
+		if len(txts) > 1 {
+			notify.Suffix = txts[1]
+		}
+	}
+	return notify
 }

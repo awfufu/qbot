@@ -136,8 +136,10 @@ type RecallNotice struct {
 }
 
 type PokeNotify struct {
+	ChatType ChatType
 	GroupID  uint64
-	UserID   uint64 // Sender
+	SenderID uint64 // Sender
 	TargetID uint64 // Receiver
-	SubType  string
+	Action   string
+	Suffix   string
 }
