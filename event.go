@@ -15,30 +15,38 @@ func (b *Bot) handleEvents(postType *string, msgStr *[]byte, jsonMap *map[string
 		case "group_msg_emoji_like":
 			notice := &api.EmojiLikeNotice{}
 			if json.Unmarshal(*msgStr, notice) == nil {
-				for _, handler := range b.eventHandlers.emojiLike {
-					handler(b, notice)
+				if n := parseEmojiLikeNotice(notice); n != nil {
+					for _, handler := range b.eventHandlers.emojiLike {
+						handler(b, n)
+					}
 				}
 			}
 		case "group_recall":
 			notice := &api.GroupRecallNotice{}
 			if json.Unmarshal(*msgStr, notice) == nil {
-				for _, handler := range b.eventHandlers.groupRecall {
-					handler(b, notice)
+				if n := parseRecallNotice(notice); n != nil {
+					for _, handler := range b.eventHandlers.recall {
+						handler(b, n)
+					}
 				}
 			}
 		case "friend_recall":
 			notice := &api.FriendRecallNotice{}
 			if json.Unmarshal(*msgStr, notice) == nil {
-				for _, handler := range b.eventHandlers.friendRecall {
-					handler(b, notice)
+				if n := parseRecallNotice(notice); n != nil {
+					for _, handler := range b.eventHandlers.recall {
+						handler(b, n)
+					}
 				}
 			}
 		case "notify":
 			if (*jsonMap)["sub_type"] == "poke" {
 				notice := &api.PokeNotify{}
 				if json.Unmarshal(*msgStr, notice) == nil {
-					for _, handler := range b.eventHandlers.poke {
-						handler(b, notice)
+					if n := parsePokeNotify(notice); n != nil {
+						for _, handler := range b.eventHandlers.poke {
+							handler(b, n)
+						}
 					}
 				}
 			}
@@ -175,4 +183,64 @@ func parseMsgJson(raw *api.MessageJson) *Message {
 		}
 	}
 	return &result
+}
+
+func parseEmojiLikeNotice(raw *api.EmojiLikeNotice) *EmojiLikeNotice {
+	if raw == nil {
+		return nil
+	}
+	notice := &EmojiLikeNotice{
+		GroupID:   raw.GroupID,
+		UserID:    raw.UserID,
+		MessageID: raw.MessageID,
+		IsAdd:     raw.IsAdd,
+	}
+	for _, like := range raw.Likes {
+		notice.Likes = append(notice.Likes, &EmojiLikeItem{
+			Count:   like.Count,
+			EmojiID: like.EmojiID,
+		})
+	}
+	return notice
+}
+
+func parseRecallNotice(raw any) *RecallNotice {
+	switch v := raw.(type) {
+	case *api.GroupRecallNotice:
+		if v == nil {
+			return nil
+		}
+		return &RecallNotice{
+			ChatType:   Group,
+			GroupID:    v.GroupID,
+			UserID:     v.UserID,
+			OperatorID: v.OperatorID,
+			MessageID:  v.MessageID,
+			Time:       v.Time,
+		}
+	case *api.FriendRecallNotice:
+		if v == nil {
+			return nil
+		}
+		return &RecallNotice{
+			ChatType:  Private,
+			UserID:    v.UserID,
+			MessageID: v.MessageID,
+			Time:      v.Time,
+		}
+	default:
+		return nil
+	}
+}
+
+func parsePokeNotify(raw *api.PokeNotify) *PokeNotify {
+	if raw == nil {
+		return nil
+	}
+	return &PokeNotify{
+		GroupID:  raw.GroupID,
+		UserID:   raw.UserID,
+		TargetID: raw.TargetID,
+		SubType:  raw.SubType,
+	}
 }

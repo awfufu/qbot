@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/awfufu/qbot/api"
 )
 
 type Bot struct {
@@ -17,11 +15,10 @@ type Bot struct {
 	apiEndpoint   string
 	enableDebug   bool
 	eventHandlers struct {
-		message      []func(b *Bot, msg *Message)
-		emojiLike    []func(b *Bot, msg *api.EmojiLikeNotice)
-		groupRecall  []func(b *Bot, msg *api.GroupRecallNotice)
-		friendRecall []func(b *Bot, msg *api.FriendRecallNotice)
-		poke         []func(b *Bot, msg *api.PokeNotify)
+		message   []func(b *Bot, msg *Message)
+		emojiLike []func(b *Bot, msg *EmojiLikeNotice)
+		recall    []func(b *Bot, msg *RecallNotice)
+		poke      []func(b *Bot, msg *PokeNotify)
 	}
 }
 
@@ -38,10 +35,9 @@ func NewBot(address string) *Bot {
 		},
 	}
 	bot.eventHandlers.message = make([]func(b *Bot, msg *Message), 0)
-	bot.eventHandlers.emojiLike = make([]func(b *Bot, msg *api.EmojiLikeNotice), 0)
-	bot.eventHandlers.groupRecall = make([]func(b *Bot, msg *api.GroupRecallNotice), 0)
-	bot.eventHandlers.friendRecall = make([]func(b *Bot, msg *api.FriendRecallNotice), 0)
-	bot.eventHandlers.poke = make([]func(b *Bot, msg *api.PokeNotify), 0)
+	bot.eventHandlers.emojiLike = make([]func(b *Bot, msg *EmojiLikeNotice), 0)
+	bot.eventHandlers.recall = make([]func(b *Bot, msg *RecallNotice), 0)
+	bot.eventHandlers.poke = make([]func(b *Bot, msg *PokeNotify), 0)
 
 	bot.httpServer = &http.Server{
 		Addr:         address,
@@ -107,35 +103,15 @@ func (b *Bot) OnMessage(handler func(b *Bot, msg *Message)) {
 	b.eventHandlers.message = append(b.eventHandlers.message, handler)
 }
 
-func (b *Bot) GroupMsg(handler func(b *Bot, msg *Message)) {
-	b.OnMessage(func(b *Bot, msg *Message) {
-		if msg.ChatType == Group {
-			handler(b, msg)
-		}
-	})
-}
-
-func (b *Bot) PrivateMsg(handler func(b *Bot, msg *Message)) {
-	b.OnMessage(func(b *Bot, msg *Message) {
-		if msg.ChatType == Private {
-			handler(b, msg)
-		}
-	})
-}
-
-func (b *Bot) OnEmojiLike(handler func(b *Bot, msg *api.EmojiLikeNotice)) {
+func (b *Bot) OnEmojiLike(handler func(b *Bot, msg *EmojiLikeNotice)) {
 	b.eventHandlers.emojiLike = append(b.eventHandlers.emojiLike, handler)
 }
 
-func (b *Bot) OnGroupRecall(handler func(b *Bot, msg *api.GroupRecallNotice)) {
-	b.eventHandlers.groupRecall = append(b.eventHandlers.groupRecall, handler)
+func (b *Bot) OnRecall(handler func(b *Bot, msg *RecallNotice)) {
+	b.eventHandlers.recall = append(b.eventHandlers.recall, handler)
 }
 
-func (b *Bot) OnFriendRecall(handler func(b *Bot, msg *api.FriendRecallNotice)) {
-	b.eventHandlers.friendRecall = append(b.eventHandlers.friendRecall, handler)
-}
-
-func (b *Bot) OnPoke(handler func(b *Bot, msg *api.PokeNotify)) {
+func (b *Bot) OnPoke(handler func(b *Bot, msg *PokeNotify)) {
 	b.eventHandlers.poke = append(b.eventHandlers.poke, handler)
 }
 

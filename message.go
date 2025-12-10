@@ -109,3 +109,32 @@ type Message struct {
 	Raw   string
 	Array []MsgItem
 }
+
+type EmojiLikeItem struct {
+	Count   int32
+	EmojiID string
+}
+
+type EmojiLikeNotice struct {
+	GroupID   uint64
+	UserID    uint64
+	MessageID uint64
+	IsAdd     bool
+	Likes     []*EmojiLikeItem
+}
+
+type RecallNotice struct {
+	ChatType   ChatType
+	GroupID    uint64
+	UserID     uint64
+	OperatorID uint64
+	MessageID  uint64
+	Time       int64
+}
+
+type PokeNotify struct {
+	GroupID  uint64
+	UserID   uint64 // Sender
+	TargetID uint64 // Receiver
+	SubType  string
+}
