@@ -4,10 +4,9 @@ package qbot
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
-	"log"
 	"net/http"
-	"time"
 )
 
 type cqResponse struct {
@@ -30,44 +29,29 @@ func (b *Bot) SendParams(action string, params map[string]any) (json.RawMessage,
 func (b *Bot) sendHttpRequest(action string, params map[string]any) (*cqResponse, error) {
 	jsonBytes, err := json.Marshal(params)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("marshal params: %v", err)
 	}
 
-	var httpResp *http.Response
-	var reqErr error
-
-	// Retry logic from sendRequest
-	for i := range 3 {
-		httpReq, err := http.NewRequest(http.MethodPost, b.apiEndpoint+"/"+action, bytes.NewBuffer(jsonBytes))
-		if err != nil {
-			return nil, err
-		}
-		httpReq.Header.Set("Content-Type", "application/json")
-
-		httpResp, reqErr = b.httpClient.Do(httpReq)
-		if reqErr == nil {
-			break // Successfully sent, exit retry loop
-		}
-		log.Printf("Request failed: %v. Retrying (%d/3)...", reqErr, i+1)
-		time.Sleep(1 * time.Second)
+	httpReq, err := http.NewRequest(http.MethodPost, b.apiEndpoint+"/"+action, bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return nil, fmt.Errorf("create request: %v", err)
 	}
+	httpReq.Header.Set("Content-Type", "application/json")
 
-	if reqErr != nil { // If all retries failed
-		log.Printf("Request failed: %v", reqErr)
-		return nil, reqErr
+	httpResp, err := b.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %v", err)
 	}
-
 	defer httpResp.Body.Close()
 
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
-		log.Printf("Request failed: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("read response: %v", err)
 	}
 
 	var cqResp cqResponse
 	if err := json.Unmarshal(body, &cqResp); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshal response: %v", err)
 	}
 
 	return &cqResp, nil
