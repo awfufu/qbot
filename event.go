@@ -7,7 +7,7 @@ import (
 	"github.com/awfufu/qbot/api"
 )
 
-func (b *Bot) handleEvents(header *eventHeader, msgStr *[]byte) {
+func (r *Receiver) handleEvents(header *eventHeader, msgStr *[]byte) {
 	switch header.PostType {
 	case "notice":
 		switch header.NoticeType {
@@ -15,8 +15,9 @@ func (b *Bot) handleEvents(header *eventHeader, msgStr *[]byte) {
 			notice := &api.EmojiLikeNotice{}
 			if json.Unmarshal(*msgStr, notice) == nil {
 				if n := parseEmojiLikeNotice(notice); n != nil {
-					for _, handler := range b.eventHandlers.emojiLike {
-						handler(b, n)
+					select {
+					case r.emojiLike <- n:
+					default:
 					}
 				}
 			}
@@ -26,8 +27,9 @@ func (b *Bot) handleEvents(header *eventHeader, msgStr *[]byte) {
 			notice := &api.RecallNotice{}
 			if json.Unmarshal(*msgStr, notice) == nil {
 				if n := parseRecallNotice(notice); n != nil {
-					for _, handler := range b.eventHandlers.recall {
-						handler(b, n)
+					select {
+					case r.recall <- n:
+					default:
 					}
 				}
 			}
@@ -36,8 +38,9 @@ func (b *Bot) handleEvents(header *eventHeader, msgStr *[]byte) {
 				notice := &api.PokeNotify{}
 				if json.Unmarshal(*msgStr, notice) == nil {
 					if n := parsePokeNotify(notice); n != nil {
-						for _, handler := range b.eventHandlers.poke {
-							handler(b, n)
+						select {
+						case r.poke <- n:
+						default:
 						}
 					}
 				}
@@ -49,8 +52,9 @@ func (b *Bot) handleEvents(header *eventHeader, msgStr *[]byte) {
 			return
 		}
 		if msg := parseMsgJson(msgJson); msg != nil {
-			for _, handler := range b.eventHandlers.message {
-				handler(b, msg)
+			select {
+			case r.message <- msg:
+			default:
 			}
 		}
 	}
