@@ -1,158 +1,90 @@
 package qbot
 
+import "math"
+
 type MsgType int
 
 const (
-	TextType    MsgType = 1
-	AtType      MsgType = 2
-	FaceType    MsgType = 3
-	ImageType   MsgType = 4
-	RecordType  MsgType = 5
-	FileType    MsgType = 6
-	ForwardType MsgType = 7
-	JsonType    MsgType = 8
+	// normal types
+	TextType  MsgType = 1
+	AtType    MsgType = 2
+	FaceType  MsgType = 3
+	ImageType MsgType = 4
 
-	OtherType MsgType = 0
+	// // private types
+	// recordType  MsgType = 5
+	// fileType    MsgType = 6
+	// forwardType MsgType = 7
+	// jsonType    MsgType = 8
+
+	// // undefined
+	// otherType MsgType = 0
 )
 
 type MsgItem interface {
 	Type() MsgType
 
-	GetTextItem() *TextItem
-	GetAtItem() *AtItem
-	GetFaceItem() *FaceItem
+	GetTextItem() string
+	GetAtItem() int64
+	GetFaceItem() int16
 	GetImageItem() *ImageItem
-	GetRecordItem() *RecordItem
-	GetFileItem() *FileItem
-	GetForwardItem() *ForwardItem
-	GetJsonItem() *JsonItem
 }
 
-type TextItem struct {
-	Content string
-}
+type TextItem string
 
-func (i *TextItem) Type() MsgType                { return TextType }
-func (i *TextItem) GetTextItem() *TextItem       { return i }
-func (i *TextItem) GetAtItem() *AtItem           { return nil }
-func (i *TextItem) GetFaceItem() *FaceItem       { return nil }
-func (i *TextItem) GetImageItem() *ImageItem     { return nil }
-func (i *TextItem) GetRecordItem() *RecordItem   { return nil }
-func (i *TextItem) GetFileItem() *FileItem       { return nil }
-func (i *TextItem) GetForwardItem() *ForwardItem { return nil }
-func (i *TextItem) GetJsonItem() *JsonItem       { return nil }
+func (i TextItem) Type() MsgType            { return TextType }
+func (i TextItem) GetTextItem() string      { return string(i) }
+func (i TextItem) GetAtItem() int64         { return -1 }
+func (i TextItem) GetFaceItem() int16       { return -1 }
+func (i TextItem) GetImageItem() *ImageItem { return nil }
 
-type AtItem struct {
-	TargetID uint64
-}
+func (i TextItem) String() string { return string(i) }
 
-func (i *AtItem) Type() MsgType                { return AtType }
-func (i *AtItem) GetTextItem() *TextItem       { return nil }
-func (i *AtItem) GetAtItem() *AtItem           { return i }
-func (i *AtItem) GetFaceItem() *FaceItem       { return nil }
-func (i *AtItem) GetImageItem() *ImageItem     { return nil }
-func (i *AtItem) GetRecordItem() *RecordItem   { return nil }
-func (i *AtItem) GetFileItem() *FileItem       { return nil }
-func (i *AtItem) GetForwardItem() *ForwardItem { return nil }
-func (i *AtItem) GetJsonItem() *JsonItem       { return nil }
+type AtItem int64
 
-type FaceItem struct {
-	ID uint64
-}
+const AtAll AtItem = math.MaxInt64
 
-func (i *FaceItem) Type() MsgType                { return FaceType }
-func (i *FaceItem) GetTextItem() *TextItem       { return nil }
-func (i *FaceItem) GetAtItem() *AtItem           { return nil }
-func (i *FaceItem) GetFaceItem() *FaceItem       { return i }
-func (i *FaceItem) GetImageItem() *ImageItem     { return nil }
-func (i *FaceItem) GetRecordItem() *RecordItem   { return nil }
-func (i *FaceItem) GetFileItem() *FileItem       { return nil }
-func (i *FaceItem) GetForwardItem() *ForwardItem { return nil }
-func (i *FaceItem) GetJsonItem() *JsonItem       { return nil }
+func (i AtItem) Type() MsgType            { return AtType }
+func (i AtItem) GetTextItem() string      { return "" }
+func (i AtItem) GetAtItem() int64         { return int64(i) }
+func (i AtItem) GetFaceItem() int16       { return -1 }
+func (i AtItem) GetImageItem() *ImageItem { return nil }
+
+type FaceItem int16
+
+func (i FaceItem) Type() MsgType            { return FaceType }
+func (i FaceItem) GetTextItem() string      { return "" }
+func (i FaceItem) GetAtItem() int64         { return -1 }
+func (i FaceItem) GetFaceItem() int16       { return int16(i) }
+func (i FaceItem) GetImageItem() *ImageItem { return nil }
 
 type ImageItem struct {
-	URL string
+	Url string
 }
 
-func (i *ImageItem) Type() MsgType                { return ImageType }
-func (i *ImageItem) GetTextItem() *TextItem       { return nil }
-func (i *ImageItem) GetAtItem() *AtItem           { return nil }
-func (i *ImageItem) GetFaceItem() *FaceItem       { return nil }
-func (i *ImageItem) GetImageItem() *ImageItem     { return i }
-func (i *ImageItem) GetRecordItem() *RecordItem   { return nil }
-func (i *ImageItem) GetFileItem() *FileItem       { return nil }
-func (i *ImageItem) GetForwardItem() *ForwardItem { return nil }
-func (i *ImageItem) GetJsonItem() *JsonItem       { return nil }
+func (i *ImageItem) Type() MsgType            { return ImageType }
+func (i *ImageItem) GetTextItem() string      { return "" }
+func (i *ImageItem) GetAtItem() int64         { return -1 }
+func (i *ImageItem) GetFaceItem() int16       { return -1 }
+func (i *ImageItem) GetImageItem() *ImageItem { return i }
 
-type RecordItem struct {
-	Path string
-}
+// type recordItem struct {
+// 	Path string
+// }
+// type fileItem struct {
+// 	Data string
+// }
 
-func (i *RecordItem) Type() MsgType                { return RecordType }
-func (i *RecordItem) GetTextItem() *TextItem       { return nil }
-func (i *RecordItem) GetAtItem() *AtItem           { return nil }
-func (i *RecordItem) GetFaceItem() *FaceItem       { return nil }
-func (i *RecordItem) GetImageItem() *ImageItem     { return nil }
-func (i *RecordItem) GetRecordItem() *RecordItem   { return i }
-func (i *RecordItem) GetFileItem() *FileItem       { return nil }
-func (i *RecordItem) GetForwardItem() *ForwardItem { return nil }
-func (i *RecordItem) GetJsonItem() *JsonItem       { return nil }
+// type forwardItem struct {
+// 	Data string
+// }
+// type jsonItem struct {
+// 	Data string
+// }
 
-type FileItem struct {
-	Data string
-}
-
-func (i *FileItem) Type() MsgType                { return FileType }
-func (i *FileItem) GetTextItem() *TextItem       { return nil }
-func (i *FileItem) GetAtItem() *AtItem           { return nil }
-func (i *FileItem) GetFaceItem() *FaceItem       { return nil }
-func (i *FileItem) GetImageItem() *ImageItem     { return nil }
-func (i *FileItem) GetRecordItem() *RecordItem   { return nil }
-func (i *FileItem) GetFileItem() *FileItem       { return i }
-func (i *FileItem) GetForwardItem() *ForwardItem { return nil }
-func (i *FileItem) GetJsonItem() *JsonItem       { return nil }
-
-type ForwardItem struct {
-	Data string
-}
-
-func (i *ForwardItem) Type() MsgType                { return ForwardType }
-func (i *ForwardItem) GetTextItem() *TextItem       { return nil }
-func (i *ForwardItem) GetAtItem() *AtItem           { return nil }
-func (i *ForwardItem) GetFaceItem() *FaceItem       { return nil }
-func (i *ForwardItem) GetImageItem() *ImageItem     { return nil }
-func (i *ForwardItem) GetRecordItem() *RecordItem   { return nil }
-func (i *ForwardItem) GetFileItem() *FileItem       { return nil }
-func (i *ForwardItem) GetForwardItem() *ForwardItem { return i }
-func (i *ForwardItem) GetJsonItem() *JsonItem       { return nil }
-
-type JsonItem struct {
-	Data string
-}
-
-func (i *JsonItem) Type() MsgType                { return JsonType }
-func (i *JsonItem) GetTextItem() *TextItem       { return nil }
-func (i *JsonItem) GetAtItem() *AtItem           { return nil }
-func (i *JsonItem) GetFaceItem() *FaceItem       { return nil }
-func (i *JsonItem) GetImageItem() *ImageItem     { return nil }
-func (i *JsonItem) GetRecordItem() *RecordItem   { return nil }
-func (i *JsonItem) GetFileItem() *FileItem       { return nil }
-func (i *JsonItem) GetForwardItem() *ForwardItem { return nil }
-func (i *JsonItem) GetJsonItem() *JsonItem       { return i }
-
-type OtherItem struct {
-	Data string
-}
-
-func (i *OtherItem) Type() MsgType                { return OtherType }
-func (i *OtherItem) GetTextItem() *TextItem       { return nil }
-func (i *OtherItem) GetAtItem() *AtItem           { return nil }
-func (i *OtherItem) GetFaceItem() *FaceItem       { return nil }
-func (i *OtherItem) GetImageItem() *ImageItem     { return nil }
-func (i *OtherItem) GetRecordItem() *RecordItem   { return nil }
-func (i *OtherItem) GetFileItem() *FileItem       { return nil }
-func (i *OtherItem) GetForwardItem() *ForwardItem { return nil }
-func (i *OtherItem) GetJsonItem() *JsonItem       { return nil }
+// type otherItem struct {
+// 	Data string
+// }
 
 type ChatType int8
 

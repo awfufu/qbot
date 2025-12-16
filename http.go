@@ -9,7 +9,13 @@ import (
 	"net/http"
 )
 
-type cqResponse struct {
+type eventHeader struct {
+	PostType   string `json:"post_type"`
+	NoticeType string `json:"notice_type"`
+	SubType    string `json:"sub_type"`
+}
+
+type httpResponse struct {
 	Status  string          `json:"status"`
 	Retcode int             `json:"retcode"`
 	Data    json.RawMessage `json:"data"`
@@ -26,7 +32,7 @@ func (b *Bot) SendParams(action string, params map[string]any) (json.RawMessage,
 	return resp.Data, nil
 }
 
-func (b *Bot) sendHttpRequest(action string, params map[string]any) (*cqResponse, error) {
+func (b *Bot) sendHttpRequest(action string, params map[string]any) (*httpResponse, error) {
 	jsonBytes, err := json.Marshal(params)
 	if err != nil {
 		return nil, fmt.Errorf("marshal params: %v", err)
@@ -49,12 +55,12 @@ func (b *Bot) sendHttpRequest(action string, params map[string]any) (*cqResponse
 		return nil, fmt.Errorf("read response: %v", err)
 	}
 
-	var cqResp cqResponse
-	if err := json.Unmarshal(body, &cqResp); err != nil {
+	var result httpResponse
+	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, fmt.Errorf("unmarshal response: %v", err)
 	}
 
-	return &cqResp, nil
+	return &result, nil
 }
 
 func (b *Bot) handleHttpEvent(w http.ResponseWriter, r *http.Request) {
@@ -70,16 +76,14 @@ func (b *Bot) handleHttpEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	jsonMap := make(map[string]any)
-	if err := json.Unmarshal(body, &jsonMap); err != nil {
+	var header eventHeader
+	if err := json.Unmarshal(body, &header); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if postType, exists := jsonMap["post_type"]; exists {
-		if str, ok := postType.(string); ok && str != "" {
-			go b.handleEvents(&str, &body, &jsonMap)
-		}
+	if header.PostType != "" {
+		go b.handleEvents(&header, &body)
 	}
 	w.WriteHeader(http.StatusOK)
 }

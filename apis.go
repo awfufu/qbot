@@ -51,12 +51,12 @@ func (b *Bot) DeleteUnidirectionalFriend(userID uint64) error {
 // Private Message APIs
 
 func (b *Bot) SendPrivateMsg(userID uint64, message ...any) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, ToMessage(message...), false)
+	return api.SendPrivateMsg(b, userID, toSegments(message...), false)
 }
 
 func (b *Bot) SendPrivateReplyMsg(userID uint64, msgID uint64, message ...any) (uint64, error) {
 	fullMessage := append([]any{replySegment(msgID)}, message...)
-	return api.SendPrivateMsg(b, userID, ToMessage(fullMessage...), false)
+	return api.SendPrivateMsg(b, userID, toSegments(fullMessage...), false)
 }
 
 func (b *Bot) SendPrivateText(userID uint64, message string) (uint64, error) {
@@ -124,12 +124,12 @@ func (b *Bot) ForwardMsgToPrivate(userID uint64, messageID string) (uint64, erro
 // Group Message APIs
 
 func (b *Bot) SendGroupMsg(groupID uint64, message ...any) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, ToMessage(message...), false)
+	return api.SendGroupMsg(b, groupID, toSegments(message...), false)
 }
 
 func (b *Bot) SendGroupReplyMsg(groupID uint64, msgID uint64, message ...any) (uint64, error) {
 	fullMessage := append([]any{replySegment(msgID)}, message...)
-	return api.SendGroupMsg(b, groupID, ToMessage(fullMessage...), false)
+	return api.SendGroupMsg(b, groupID, toSegments(fullMessage...), false)
 }
 
 func (b *Bot) SendGroupText(groupID uint64, message string) (uint64, error) {

@@ -2,6 +2,7 @@ package qbot
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/awfufu/qbot/api"
 )
@@ -14,12 +15,12 @@ func Text(text string) Segment {
 }
 
 // create at segment
-func At(userID uint64) Segment {
+func At(userID int64) Segment {
 	return atSegment(userID)
 }
 
 // create face segment
-func Face(id uint64) Segment {
+func Face(id int16) Segment {
 	return faceSegment(id)
 }
 
@@ -37,16 +38,22 @@ func textSegment(text string) Segment {
 	}
 }
 
-func atSegment(userID uint64) Segment {
+func atSegment(userID int64) Segment {
+	var target string
+	if userID == int64(AtAll) {
+		target = "all"
+	} else {
+		target = fmt.Sprintf("%d", userID)
+	}
 	return Segment{
 		Type: "at",
 		Data: map[string]any{
-			"qq": fmt.Sprintf("%d", userID),
+			"qq": target,
 		},
 	}
 }
 
-func faceSegment(id uint64) Segment {
+func faceSegment(id int16) Segment {
 	return Segment{
 		Type: "face",
 		Data: map[string]any{
@@ -142,14 +149,14 @@ func fileSegment(file string) Segment {
 	}
 }
 
-func nodeSegment(id string) Segment {
-	return Segment{
-		Type: "node",
-		Data: map[string]any{
-			"id": id,
-		},
-	}
-}
+// func nodeSegment(id string) Segment {
+// 	return Segment{
+// 		Type: "node",
+// 		Data: map[string]any{
+// 			"id": id,
+// 		},
+// 	}
+// }
 
 func customNodeSegment(name string, uin uint64, content ...any) Segment {
 	return Segment{
@@ -157,7 +164,7 @@ func customNodeSegment(name string, uin uint64, content ...any) Segment {
 		Data: map[string]any{
 			"nickname": name,
 			"user_id":  fmt.Sprintf("%d", uin),
-			"content":  ToMessage(content...),
+			"content":  toSegments(content...),
 		},
 	}
 }
@@ -171,25 +178,94 @@ func replySegment(msgID uint64) Segment {
 	}
 }
 
-func ToMessage(args ...any) []api.Segment {
+func rawArrayToSegments(array []MsgItem) []Segment {
+	var segments []Segment
+	for _, e := range array {
+		switch v := e.(type) {
+		case TextItem:
+			segments = append(segments, textSegment(v.String()))
+		case AtItem:
+			segments = append(segments, atSegment(int64(v)))
+		case FaceItem:
+			segments = append(segments, faceSegment(int16(v)))
+		case *ImageItem:
+			segments = append(segments, imageSegment(v.Url))
+		}
+	}
+	return segments
+}
+
+func toSegments(args ...any) []Segment {
 	if len(args) == 0 {
-		return []api.Segment{}
+		return []Segment{}
 	}
 
-	var segments []api.Segment
+	var segments []Segment
 	for _, arg := range args {
 		switch v := arg.(type) {
+		case TextItem:
+			if v == "" {
+				log.Println("[WARN] continue empty text segment")
+				continue
+			}
+			segments = append(segments, textSegment(v.String()))
+		case AtItem:
+			if int64(v) <= 0 {
+				log.Printf("[WARN] continue invalid [at:%d] segment", v)
+				continue
+			}
+			segments = append(segments, atSegment(int64(v)))
+		case FaceItem:
+			if int16(v) < 0 {
+				log.Printf("[WARN] continue invalid [face:%d] segment", v)
+				continue
+			}
+			segments = append(segments, faceSegment(int16(v)))
+		case *ImageItem:
+			if v == nil {
+				log.Println("[WARN] continue nil image segment")
+				continue
+			}
+			segments = append(segments, imageSegment(v.Url))
+		case []MsgItem:
+			if len(v) == 0 {
+				log.Println("[WARN] continue empty msg item array")
+				continue
+			}
+			segments = append(segments, rawArrayToSegments(v)...)
 		case Segment:
 			segments = append(segments, v)
 		case string:
+			if v == "" {
+				log.Println("[WARN] continue empty string segment")
+				continue
+			}
 			segments = append(segments, textSegment(v))
 		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64, bool:
 			segments = append(segments, textSegment(fmt.Sprint(v)))
 		case fmt.Stringer:
-			segments = append(segments, textSegment(v.String()))
+			if v == nil {
+				log.Println("[WARN] continue nil stringer segment")
+				continue
+			}
+			s := v.String()
+			if s == "" {
+				log.Println("[WARN] continue empty stringer segment")
+				continue
+			}
+			segments = append(segments, textSegment(s))
 		default:
 			// Try to convert unknown types to string representation
-			segments = append(segments, textSegment(fmt.Sprintf("%v", v)))
+			if v == nil {
+				log.Println("[WARN] continue nil segment")
+				continue
+			}
+			s := fmt.Sprintf("%v", v)
+			if s == "" {
+				log.Println("[WARN] continue empty segment")
+				continue
+			}
+			segments = append(segments, textSegment(s))
 		}
 	}
 	return segments

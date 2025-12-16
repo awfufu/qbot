@@ -1,8 +1,14 @@
 package api
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"errors"
+)
 
 func SendGroupMsg(c Client, groupID uint64, message []Segment, autoEscape bool) (uint64, error) {
+	if len(message) == 0 {
+		return 0, errors.New("message is empty")
+	}
 
 	params := map[string]any{
 		"group_id":    groupID,

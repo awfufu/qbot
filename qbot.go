@@ -66,7 +66,7 @@ func (b *Bot) ConnectNapcat(url string) error {
 		return fmt.Errorf("read response: %v", err)
 	}
 
-	var cqResp cqResponse
+	var cqResp httpResponse
 	if err := json.Unmarshal(body, &cqResp); err != nil {
 		return fmt.Errorf("parse response: %v", err)
 	}

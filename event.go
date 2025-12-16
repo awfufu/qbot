@@ -2,16 +2,15 @@ package qbot
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 
 	"github.com/awfufu/qbot/api"
 )
 
-func (b *Bot) handleEvents(postType *string, msgStr *[]byte, jsonMap *map[string]any) {
-	switch *postType {
+func (b *Bot) handleEvents(header *eventHeader, msgStr *[]byte) {
+	switch header.PostType {
 	case "notice":
-		switch (*jsonMap)["notice_type"] {
+		switch header.NoticeType {
 		case "group_msg_emoji_like":
 			notice := &api.EmojiLikeNotice{}
 			if json.Unmarshal(*msgStr, notice) == nil {
@@ -33,7 +32,7 @@ func (b *Bot) handleEvents(postType *string, msgStr *[]byte, jsonMap *map[string
 				}
 			}
 		case "notify":
-			if (*jsonMap)["sub_type"] == "poke" {
+			if header.SubType == "poke" {
 				notice := &api.PokeNotify{}
 				if json.Unmarshal(*msgStr, notice) == nil {
 					if n := parsePokeNotify(notice); n != nil {
@@ -100,79 +99,76 @@ func parseMsgJson(raw *api.MessageJson) *Message {
 		if err := json.Unmarshal(msg.Data, &jsonData); err != nil {
 			return nil
 		}
+
 		switch msg.Type {
+		case "reply":
+			switch v := jsonData["id"].(type) {
+			case string: // string
+				result.ReplyID, _ = strconv.ParseUint(v, 10, 64)
+			case float64: // number
+				result.ReplyID = uint64(v)
+			}
 		case "text":
 			if text, ok := jsonData["text"].(string); ok {
-				result.Array = append(result.Array, &TextItem{
-					Content: text,
-				})
+				result.Array = append(result.Array, TextItem(text))
 			}
 		case "at":
-			var qqStr string
-			if qq, ok := jsonData["qq"].(string); ok {
-				qqStr = qq
-			} else if qq, ok := jsonData["qq"].(float64); ok {
-				qqStr = fmt.Sprintf("%.0f", qq)
-			}
-			if qqStr != "" {
-				qqInt, err := strconv.ParseUint(qqStr, 10, 64)
-				if err != nil {
-					continue
+			var item AtItem
+			switch v := jsonData["qq"].(type) {
+			case string:
+				if v == "all" {
+					item = AtAll
+				} else {
+					qq, err := strconv.ParseInt(v, 10, 64)
+					if err != nil {
+						continue
+					}
+					item = AtItem(qq)
 				}
-				result.Array = append(result.Array, &AtItem{
-					TargetID: qqInt,
-				})
+			case float64:
+				item = AtItem(v)
 			}
+			result.Array = append(result.Array, item)
 		case "face":
-			var idStr string
-			if id, ok := jsonData["id"].(string); ok {
-				idStr = id
-			} else if id, ok := jsonData["id"].(float64); ok {
-				idStr = fmt.Sprintf("%.0f", id)
-			}
-			if idStr != "" {
-				idInt, err := strconv.ParseUint(idStr, 10, 64)
+			var item FaceItem
+			switch v := jsonData["id"].(type) {
+			case string:
+				id, err := strconv.ParseInt(v, 10, 16)
 				if err != nil {
 					continue
 				}
-				result.Array = append(result.Array, &FaceItem{
-					ID: idInt,
-				})
+				item = FaceItem(id)
+			case float64:
+				item = FaceItem(v)
 			}
+			result.Array = append(result.Array, item)
 		case "image":
 			if url, ok := jsonData["url"].(string); ok {
 				result.Array = append(result.Array, &ImageItem{
-					URL: url,
+					Url: url,
 				})
 			}
-		case "record":
-			if path, ok := jsonData["path"].(string); ok {
-				result.Array = append(result.Array, &RecordItem{
-					Path: path,
-				})
-			}
-		case "reply":
-			if id, ok := jsonData["id"].(string); ok {
-				result.ReplyID, _ = strconv.ParseUint(id, 10, 64)
-			} else if id, ok := jsonData["id"].(float64); ok {
-				result.ReplyID = uint64(id)
-			}
-		case "file":
-			result.Array = append(result.Array, &FileItem{
-				Data: string(msg.Data),
-			})
-		case "forward":
-			result.Array = append(result.Array, &ForwardItem{
-				Data: string(msg.Data),
-			})
-		case "json":
-			result.Array = append(result.Array, &JsonItem{
-				Data: string(msg.Data),
-			})
+
+		// case "record":
+		// 	if path, ok := jsonData["path"].(string); ok {
+		// 		result.Array = append(result.Array, &recordItem{
+		// 			Path: path,
+		// 		})
+		// 	}
+		// case "file":
+		// 	result.Array = append(result.Array, &fileItem{
+		// 		Data: string(msg.Data),
+		// 	})
+		// case "forward":
+		// 	result.Array = append(result.Array, &forwardItem{
+		// 		Data: string(msg.Data),
+		// 	})
+		// case "json":
+		// 	result.Array = append(result.Array, &jsonItem{
+		// 		Data: string(msg.Data),
+		// 	})
 		default:
-			result.Array = append(result.Array, &OtherItem{
-				Data: string(msg.Data),
-			})
+			return nil
 		}
 	}
 	return &result
