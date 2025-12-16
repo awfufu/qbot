@@ -24,27 +24,27 @@ type httpResponse struct {
 }
 
 // Send raw parameters to NapCat
-func (b *Bot) SendParams(action string, params map[string]any) (json.RawMessage, error) {
-	resp, err := b.sendHttpRequest(action, params)
+func (s *Sender) SendParams(action string, params map[string]any) (json.RawMessage, error) {
+	resp, err := s.sendHttpRequest(action, params)
 	if err != nil {
 		return nil, err
 	}
 	return resp.Data, nil
 }
 
-func (b *Bot) sendHttpRequest(action string, params map[string]any) (*httpResponse, error) {
+func (s *Sender) sendHttpRequest(action string, params map[string]any) (*httpResponse, error) {
 	jsonBytes, err := json.Marshal(params)
 	if err != nil {
 		return nil, fmt.Errorf("marshal params: %v", err)
 	}
 
-	httpReq, err := http.NewRequest(http.MethodPost, b.apiEndpoint+"/"+action, bytes.NewBuffer(jsonBytes))
+	httpReq, err := http.NewRequest(http.MethodPost, s.apiEndpoint+"/"+action, bytes.NewBuffer(jsonBytes))
 	if err != nil {
 		return nil, fmt.Errorf("create request: %v", err)
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
-	httpResp, err := b.httpClient.Do(httpReq)
+	httpResp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %v", err)
 	}
@@ -63,18 +63,18 @@ func (b *Bot) sendHttpRequest(action string, params map[string]any) (*httpRespon
 	return &result, nil
 }
 
-func (b *Bot) handleHttpEvent(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+func (r *Receiver) handleHttpEvent(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
-	body, err := io.ReadAll(r.Body)
+	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	defer r.Body.Close()
+	defer req.Body.Close()
 
 	var header eventHeader
 	if err := json.Unmarshal(body, &header); err != nil {
@@ -83,7 +83,7 @@ func (b *Bot) handleHttpEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if header.PostType != "" {
-		go b.handleEvents(&header, &body)
+		go r.handleEvents(&header, &body)
 	}
 	w.WriteHeader(http.StatusOK)
 }
