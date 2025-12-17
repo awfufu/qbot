@@ -182,10 +182,3 @@ var qfaceMap = map[int]string{
 	394: "新年大龙",
 	395: "略略略",
 }
-
-func GetQFaceName(id int) string {
-	if found, exists := qfaceMap[id]; exists {
-		return found
-	}
-	return ""
-}
