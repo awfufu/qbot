@@ -2,6 +2,18 @@ package qbot
 
 import "math"
 
+type GroupID uint64
+type UserID uint64
+type MsgID uint64
+type FaceID uint16
+
+const (
+	InvalidGroup GroupID = 0
+	InvalidUser  UserID  = 0
+	InvalidMsgID MsgID   = 0
+	InvalidFace  FaceID  = math.MaxUint16
+)
+
 type MsgType uint8
 
 const (
@@ -16,8 +28,8 @@ const (
 type MsgItem interface {
 	Type() MsgType
 	Text() string
-	At() int64
-	Face() int16
+	At() UserID
+	Face() FaceID
 	Image() *ImageItem
 }
 
@@ -25,28 +37,28 @@ type TextItem string
 
 func (i TextItem) Type() MsgType     { return TextType }
 func (i TextItem) Text() string      { return string(i) }
-func (i TextItem) At() int64         { return -1 }
-func (i TextItem) Face() int16       { return -1 }
+func (i TextItem) At() UserID        { return InvalidUser }
+func (i TextItem) Face() FaceID      { return InvalidFace }
 func (i TextItem) Image() *ImageItem { return nil }
 
 func (i TextItem) String() string { return string(i) }
 
-type AtItem int64
+type AtItem UserID
 
-const AtAll AtItem = math.MaxInt64
+const AtAll UserID = math.MaxUint64
 
 func (i AtItem) Type() MsgType     { return AtType }
 func (i AtItem) Text() string      { return "" }
-func (i AtItem) At() int64         { return int64(i) }
-func (i AtItem) Face() int16       { return -1 }
+func (i AtItem) At() UserID        { return UserID(i) }
+func (i AtItem) Face() FaceID      { return InvalidFace }
 func (i AtItem) Image() *ImageItem { return nil }
 
-type FaceItem int16
+type FaceItem FaceID
 
 func (i FaceItem) Type() MsgType     { return FaceType }
 func (i FaceItem) Text() string      { return "" }
-func (i FaceItem) At() int64         { return -1 }
-func (i FaceItem) Face() int16       { return int16(i) }
+func (i FaceItem) At() UserID        { return InvalidUser }
+func (i FaceItem) Face() FaceID      { return FaceID(i) }
 func (i FaceItem) Image() *ImageItem { return nil }
 
 func (i FaceItem) String() string {
@@ -62,8 +74,8 @@ type ImageItem struct {
 
 func (i *ImageItem) Type() MsgType     { return ImageType }
 func (i *ImageItem) Text() string      { return "" }
-func (i *ImageItem) At() int64         { return -1 }
-func (i *ImageItem) Face() int16       { return -1 }
+func (i *ImageItem) At() UserID        { return InvalidUser }
+func (i *ImageItem) Face() FaceID      { return InvalidFace }
 func (i *ImageItem) Image() *ImageItem { return i }
 
 type ChatType int8
@@ -87,14 +99,14 @@ const (
 
 type Message struct {
 	ChatType ChatType // enum: Private, Group
-	MsgID    uint64
-	ReplyID  uint64
-	UserID   uint64
+	MsgID    MsgID
+	ReplyID  MsgID
+	UserID   UserID
 	Name     string
 	Time     uint64
 
 	// group
-	GroupID   uint64    // = 0  if msg from private
+	GroupID   GroupID   // = InvalidGroup if msg from private
 	GroupCard string    // = "" if msg from private
 	GroupRole GroupRole // = NotAGroup if msg from private
 
@@ -109,30 +121,30 @@ type EmojiLikeItem struct {
 }
 
 type EmojiReaction struct {
-	GroupID   uint64
-	UserID    uint64
-	MessageID uint64
+	GroupID   GroupID
+	UserID    UserID
+	MessageID MsgID
 	IsAdd     bool
 	IsQFace   bool
 	Count     int32
-	FaceID    uint64
+	FaceID    FaceID
 	EmojiRune rune
 }
 
 type RecallNotice struct {
 	ChatType   ChatType
-	GroupID    uint64
-	UserID     uint64
-	OperatorID uint64
-	MessageID  uint64
+	GroupID    GroupID
+	UserID     UserID
+	OperatorID UserID
+	MessageID  MsgID
 	Time       int64
 }
 
 type PokeNotify struct {
 	ChatType ChatType
-	GroupID  uint64
-	SenderID uint64 // Sender
-	TargetID uint64 // Receiver
+	GroupID  GroupID
+	SenderID UserID // Sender
+	TargetID UserID // Receiver
 	Action   string
 	Suffix   string
 }

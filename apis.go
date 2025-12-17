@@ -28,8 +28,8 @@ func (b *Sender) GetOnlineClients(noCache bool) ([]api.Device, error) {
 
 // Friend APIs
 
-func (b *Sender) GetStrangerInfo(userID uint64, noCache bool) (*api.StrangerInfo, error) {
-	return api.GetStrangerInfo(b, userID, noCache)
+func (b *Sender) GetStrangerInfo(userID UserID, noCache bool) (*api.StrangerInfo, error) {
+	return api.GetStrangerInfo(b, uint64(userID), noCache)
 }
 
 func (b *Sender) GetFriendList() ([]api.FriendInfo, error) {
@@ -40,62 +40,62 @@ func (b *Sender) GetUnidirectionalFriendList() ([]api.UnidirectionalFriendInfo, 
 	return api.GetUnidirectionalFriendList(b)
 }
 
-func (b *Sender) DeleteFriend(userID uint64) error {
-	return api.DeleteFriend(b, userID)
+func (b *Sender) DeleteFriend(userID UserID) error {
+	return api.DeleteFriend(b, uint64(userID))
 }
 
-func (b *Sender) DeleteUnidirectionalFriend(userID uint64) error {
-	return api.DeleteUnidirectionalFriend(b, userID)
+func (b *Sender) DeleteUnidirectionalFriend(userID UserID) error {
+	return api.DeleteUnidirectionalFriend(b, uint64(userID))
 }
 
 // Private Message APIs
 
-func (b *Sender) SendPrivateMsg(userID uint64, message ...any) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, toSegments(message...), false)
+func (b *Sender) SendPrivateMsg(userID UserID, message ...any) (uint64, error) {
+	return api.SendPrivateMsg(b, uint64(userID), toSegments(message...), false)
 }
 
-func (b *Sender) SendPrivateReplyMsg(userID uint64, msgID uint64, message ...any) (uint64, error) {
+func (b *Sender) SendPrivateReplyMsg(userID UserID, msgID MsgID, message ...any) (uint64, error) {
 	fullMessage := append([]any{replySegment(msgID)}, message...)
-	return api.SendPrivateMsg(b, userID, toSegments(fullMessage...), false)
+	return api.SendPrivateMsg(b, uint64(userID), toSegments(fullMessage...), false)
 }
 
-func (b *Sender) SendPrivateText(userID uint64, message string) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, []Segment{textSegment(message)}, true)
+func (b *Sender) SendPrivateText(userID UserID, message string) (uint64, error) {
+	return api.SendPrivateMsg(b, uint64(userID), []Segment{textSegment(message)}, true)
 }
 
-func (b *Sender) SendPrivateJson(userID uint64, data string) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, []Segment{jsonSegment(data)}, false)
+func (b *Sender) SendPrivateJson(userID UserID, data string) (uint64, error) {
+	return api.SendPrivateMsg(b, uint64(userID), []Segment{jsonSegment(data)}, false)
 }
 
-func (b *Sender) SendPrivateVoice(userID uint64, file string) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, []Segment{recordSegment(file)}, false)
+func (b *Sender) SendPrivateVoice(userID UserID, file string) (uint64, error) {
+	return api.SendPrivateMsg(b, uint64(userID), []Segment{recordSegment(file)}, false)
 }
 
-func (b *Sender) SendPrivateVideo(userID uint64, file string) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, []Segment{videoSegment(file)}, false)
+func (b *Sender) SendPrivateVideo(userID UserID, file string) (uint64, error) {
+	return api.SendPrivateMsg(b, uint64(userID), []Segment{videoSegment(file)}, false)
 }
 
-func (b *Sender) SendPrivateMusic(userID uint64, typeStr, id string) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, []Segment{musicSegment(typeStr, id)}, false)
+func (b *Sender) SendPrivateMusic(userID UserID, typeStr, id string) (uint64, error) {
+	return api.SendPrivateMsg(b, uint64(userID), []Segment{musicSegment(typeStr, id)}, false)
 }
 
-func (b *Sender) SendPrivateCustomMusic(userID uint64, url, audio, title, content, image string) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, []Segment{customMusicSegment(url, audio, title, content, image)}, false)
+func (b *Sender) SendPrivateCustomMusic(userID UserID, url, audio, title, content, image string) (uint64, error) {
+	return api.SendPrivateMsg(b, uint64(userID), []Segment{customMusicSegment(url, audio, title, content, image)}, false)
 }
 
-func (b *Sender) SendPrivateDice(userID uint64) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, []Segment{diceSegment()}, false)
+func (b *Sender) SendPrivateDice(userID UserID) (uint64, error) {
+	return api.SendPrivateMsg(b, uint64(userID), []Segment{diceSegment()}, false)
 }
 
-func (b *Sender) SendPrivateRps(userID uint64) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, []Segment{rpsSegment()}, false)
+func (b *Sender) SendPrivateRps(userID UserID) (uint64, error) {
+	return api.SendPrivateMsg(b, uint64(userID), []Segment{rpsSegment()}, false)
 }
 
-func (b *Sender) SendPrivateFile(userID uint64, file string) (uint64, error) {
-	return api.SendPrivateMsg(b, userID, []Segment{fileSegment(file)}, false)
+func (b *Sender) SendPrivateFile(userID UserID, file string) (uint64, error) {
+	return api.SendPrivateMsg(b, uint64(userID), []Segment{fileSegment(file)}, false)
 }
 
-func (b *Sender) SendPrivateForward(userID uint64, block ForwardBlock) (int32, string, error) {
+func (b *Sender) SendPrivateForward(userID UserID, block ForwardBlock) (int32, string, error) {
 	var messages []Segment
 	for _, item := range block.Content {
 		content := make([]any, len(item.Content))
@@ -110,65 +110,65 @@ func (b *Sender) SendPrivateForward(userID uint64, block ForwardBlock) (int32, s
 		news = append(news, api.News{Text: block.Preview})
 	}
 
-	return api.SendPrivateForwardMsg(b, userID, messages, news, block.Prompt, block.Summary, block.Title)
+	return api.SendPrivateForwardMsg(b, uint64(userID), messages, news, block.Prompt, block.Summary, block.Title)
 }
 
-func (b *Sender) SendPrivatePoke(userID uint64) error {
-	return api.FriendPoke(b, userID)
+func (b *Sender) SendPrivatePoke(userID UserID) error {
+	return api.FriendPoke(b, uint64(userID))
 }
 
-func (b *Sender) ForwardMsgToPrivate(userID uint64, messageID string) (uint64, error) {
-	return api.ForwardFriendSingleMsg(b, userID, messageID)
+func (b *Sender) ForwardMsgToPrivate(userID UserID, messageID string) (uint64, error) {
+	return api.ForwardFriendSingleMsg(b, uint64(userID), messageID)
 }
 
 // Group Message APIs
 
-func (b *Sender) SendGroupMsg(groupID uint64, message ...any) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, toSegments(message...), false)
+func (b *Sender) SendGroupMsg(groupID GroupID, message ...any) (uint64, error) {
+	return api.SendGroupMsg(b, uint64(groupID), toSegments(message...), false)
 }
 
-func (b *Sender) SendGroupReplyMsg(groupID uint64, msgID uint64, message ...any) (uint64, error) {
+func (b *Sender) SendGroupReplyMsg(groupID GroupID, msgID MsgID, message ...any) (uint64, error) {
 	fullMessage := append([]any{replySegment(msgID)}, message...)
-	return api.SendGroupMsg(b, groupID, toSegments(fullMessage...), false)
+	return api.SendGroupMsg(b, uint64(groupID), toSegments(fullMessage...), false)
 }
 
-func (b *Sender) SendGroupText(groupID uint64, message string) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, []Segment{textSegment(message)}, true)
+func (b *Sender) SendGroupText(groupID GroupID, message string) (uint64, error) {
+	return api.SendGroupMsg(b, uint64(groupID), []Segment{textSegment(message)}, true)
 }
 
-func (b *Sender) SendGroupJson(groupID uint64, data string) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, []Segment{jsonSegment(data)}, false)
+func (b *Sender) SendGroupJson(groupID GroupID, data string) (uint64, error) {
+	return api.SendGroupMsg(b, uint64(groupID), []Segment{jsonSegment(data)}, false)
 }
 
-func (b *Sender) SendGroupVoice(groupID uint64, file string) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, []Segment{recordSegment(file)}, false)
+func (b *Sender) SendGroupVoice(groupID GroupID, file string) (uint64, error) {
+	return api.SendGroupMsg(b, uint64(groupID), []Segment{recordSegment(file)}, false)
 }
 
-func (b *Sender) SendGroupVideo(groupID uint64, file string) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, []Segment{videoSegment(file)}, false)
+func (b *Sender) SendGroupVideo(groupID GroupID, file string) (uint64, error) {
+	return api.SendGroupMsg(b, uint64(groupID), []Segment{videoSegment(file)}, false)
 }
 
-func (b *Sender) SendGroupMusic(groupID uint64, typeStr, id string) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, []Segment{musicSegment(typeStr, id)}, false)
+func (b *Sender) SendGroupMusic(groupID GroupID, typeStr, id string) (uint64, error) {
+	return api.SendGroupMsg(b, uint64(groupID), []Segment{musicSegment(typeStr, id)}, false)
 }
 
-func (b *Sender) SendGroupCustomMusic(groupID uint64, url, audio, title, content, image string) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, []Segment{customMusicSegment(url, audio, title, content, image)}, false)
+func (b *Sender) SendGroupCustomMusic(groupID GroupID, url, audio, title, content, image string) (uint64, error) {
+	return api.SendGroupMsg(b, uint64(groupID), []Segment{customMusicSegment(url, audio, title, content, image)}, false)
 }
 
-func (b *Sender) SendGroupDice(groupID uint64) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, []Segment{diceSegment()}, false)
+func (b *Sender) SendGroupDice(groupID GroupID) (uint64, error) {
+	return api.SendGroupMsg(b, uint64(groupID), []Segment{diceSegment()}, false)
 }
 
-func (b *Sender) SendGroupRps(groupID uint64) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, []Segment{rpsSegment()}, false)
+func (b *Sender) SendGroupRps(groupID GroupID) (uint64, error) {
+	return api.SendGroupMsg(b, uint64(groupID), []Segment{rpsSegment()}, false)
 }
 
-func (b *Sender) SendGroupFile(groupID uint64, file string) (uint64, error) {
-	return api.SendGroupMsg(b, groupID, []Segment{fileSegment(file)}, false)
+func (b *Sender) SendGroupFile(groupID GroupID, file string) (uint64, error) {
+	return api.SendGroupMsg(b, uint64(groupID), []Segment{fileSegment(file)}, false)
 }
 
-func (b *Sender) SendGroupForward(groupID uint64, block ForwardBlock) (int32, string, error) {
+func (b *Sender) SendGroupForward(groupID GroupID, block ForwardBlock) (int32, string, error) {
 	var messages []Segment
 	for _, item := range block.Content {
 		content := make([]any, len(item.Content))
@@ -183,15 +183,15 @@ func (b *Sender) SendGroupForward(groupID uint64, block ForwardBlock) (int32, st
 		news = append(news, api.News{Text: block.Preview})
 	}
 
-	return api.SendGroupForwardMsg(b, groupID, messages, news, block.Prompt, block.Summary, block.Title)
+	return api.SendGroupForwardMsg(b, uint64(groupID), messages, news, block.Prompt, block.Summary, block.Title)
 }
 
-func (b *Sender) SendGroupPoke(groupID uint64, userID uint64) error {
-	return api.GroupPoke(b, groupID, userID)
+func (b *Sender) SendGroupPoke(groupID GroupID, userID UserID) error {
+	return api.GroupPoke(b, uint64(groupID), uint64(userID))
 }
 
-func (b *Sender) ForwardMsgToGroup(messageID string, groupID uint64) (uint64, error) {
-	return api.ForwardGroupSingleMsg(b, groupID, messageID)
+func (b *Sender) ForwardMsgToGroup(messageID string, groupID GroupID) (uint64, error) {
+	return api.ForwardGroupSingleMsg(b, uint64(groupID), messageID)
 }
 
 // Message APIs
@@ -200,8 +200,8 @@ func (b *Sender) GetMsg(messageID int32) (*api.MessageJson, error) {
 	return api.GetMsg(b, messageID)
 }
 
-func (b *Sender) DeleteMsg(msgID uint64) error {
-	return api.DeleteMsg(b, msgID)
+func (b *Sender) DeleteMsg(msgID MsgID) error {
+	return api.DeleteMsg(b, uint64(msgID))
 }
 
 func (b *Sender) MarkMsgAsRead(messageID int32) error {
@@ -212,8 +212,8 @@ func (b *Sender) GetForwardMsg(messageID string) ([]api.ForwardMsg, error) {
 	return api.GetForwardMsg(b, messageID)
 }
 
-func (b *Sender) GetGroupMsgHistory(groupID uint64, messageSeq int32) ([]api.MessageJson, error) {
-	return api.GetGroupMsgHistory(b, groupID, messageSeq)
+func (b *Sender) GetGroupMsgHistory(groupID GroupID, messageSeq int32) ([]api.MessageJson, error) {
+	return api.GetGroupMsgHistory(b, uint64(groupID), messageSeq)
 }
 
 // Image & Voice APIs
@@ -254,146 +254,146 @@ func (b *Sender) SetGroupAddRequest(flag, subType string, approve bool, reason s
 
 // Group Info APIs
 
-func (b *Sender) GetGroupInfo(groupID uint64, noCache bool) (*api.GroupInfo, error) {
-	return api.GetGroupInfo(b, groupID, noCache)
+func (b *Sender) GetGroupInfo(groupID GroupID, noCache bool) (*api.GroupInfo, error) {
+	return api.GetGroupInfo(b, uint64(groupID), noCache)
 }
 
 func (b *Sender) GetGroupList(noCache bool) ([]api.GroupInfo, error) {
 	return api.GetGroupList(b, noCache)
 }
 
-func (b *Sender) GetGroupMemberInfo(groupID uint64, userID uint64, noCache bool) (*api.GroupMemberInfo, error) {
-	return api.GetGroupMemberInfo(b, groupID, userID, noCache)
+func (b *Sender) GetGroupMemberInfo(groupID GroupID, userID UserID, noCache bool) (*api.GroupMemberInfo, error) {
+	return api.GetGroupMemberInfo(b, uint64(groupID), uint64(userID), noCache)
 }
 
-func (b *Sender) GetGroupMemberList(groupID uint64, noCache bool) ([]api.GroupMemberInfo, error) {
-	return api.GetGroupMemberList(b, groupID, noCache)
+func (b *Sender) GetGroupMemberList(groupID GroupID, noCache bool) ([]api.GroupMemberInfo, error) {
+	return api.GetGroupMemberList(b, uint64(groupID), noCache)
 }
 
-func (b *Sender) GetGroupHonorInfo(groupID uint64, typeStr string) (*api.GroupHonorInfo, error) {
-	return api.GetGroupHonorInfo(b, groupID, typeStr)
+func (b *Sender) GetGroupHonorInfo(groupID GroupID, typeStr string) (*api.GroupHonorInfo, error) {
+	return api.GetGroupHonorInfo(b, uint64(groupID), typeStr)
 }
 
 func (b *Sender) GetGroupSystemMsg() (*api.GroupSystemMsg, error) {
 	return api.GetGroupSystemMsg(b)
 }
 
-func (b *Sender) GetEssenceMsgList(groupID uint64) ([]api.EssenceMsg, error) {
-	return api.GetEssenceMsgList(b, groupID)
+func (b *Sender) GetEssenceMsgList(groupID GroupID) ([]api.EssenceMsg, error) {
+	return api.GetEssenceMsgList(b, uint64(groupID))
 }
 
-func (b *Sender) GetGroupAtAllRemain(groupID uint64) (bool, int32, int32, error) {
-	return api.GetGroupAtAllRemain(b, groupID)
+func (b *Sender) GetGroupAtAllRemain(groupID GroupID) (bool, int32, int32, error) {
+	return api.GetGroupAtAllRemain(b, uint64(groupID))
 }
 
 // Group Setting APIs
 
-func (b *Sender) SetGroupSpecialTitle(groupID uint64, userID uint64, specialTitle string) error {
-	return api.SetGroupSpecialTitle(b, groupID, userID, specialTitle)
+func (b *Sender) SetGroupSpecialTitle(groupID GroupID, userID UserID, specialTitle string) error {
+	return api.SetGroupSpecialTitle(b, uint64(groupID), uint64(userID), specialTitle)
 }
 
-func (b *Sender) SetGroupName(groupID uint64, groupName string) error {
-	return api.SetGroupName(b, groupID, groupName)
+func (b *Sender) SetGroupName(groupID GroupID, groupName string) error {
+	return api.SetGroupName(b, uint64(groupID), groupName)
 }
 
-func (b *Sender) SetGroupAdmin(groupID uint64, userID uint64, enable bool) error {
-	return api.SetGroupAdmin(b, groupID, userID, enable)
+func (b *Sender) SetGroupAdmin(groupID GroupID, userID UserID, enable bool) error {
+	return api.SetGroupAdmin(b, uint64(groupID), uint64(userID), enable)
 }
 
-func (b *Sender) SetGroupBan(groupID uint64, userID uint64, duration int) error {
-	return api.SetGroupBan(b, groupID, userID, duration)
+func (b *Sender) SetGroupBan(groupID GroupID, userID UserID, duration int) error {
+	return api.SetGroupBan(b, uint64(groupID), uint64(userID), duration)
 }
 
-func (b *Sender) SetGroupWholeBan(groupID uint64, enable bool) error {
-	return api.SetGroupWholeBan(b, groupID, enable)
+func (b *Sender) SetGroupWholeBan(groupID GroupID, enable bool) error {
+	return api.SetGroupWholeBan(b, uint64(groupID), enable)
 }
 
-func (b *Sender) SetGroupAnonymousBan(groupID uint64, anonymous, anonymousFlag string, duration int) error {
-	return api.SetGroupAnonymousBan(b, groupID, anonymous, anonymousFlag, duration)
+func (b *Sender) SetGroupAnonymousBan(groupID GroupID, anonymous, anonymousFlag string, duration int) error {
+	return api.SetGroupAnonymousBan(b, uint64(groupID), anonymous, anonymousFlag, duration)
 }
 
-func (b *Sender) SetGroupEssence(msgID uint64) error {
-	return api.SetGroupEssence(b, msgID)
+func (b *Sender) SetGroupEssence(msgID MsgID) error {
+	return api.SetGroupEssence(b, uint64(msgID))
 }
 
-func (b *Sender) DeleteGroupEssence(msgID uint64) error {
-	return api.DeleteGroupEssence(b, msgID)
+func (b *Sender) DeleteGroupEssence(msgID MsgID) error {
+	return api.DeleteGroupEssence(b, uint64(msgID))
 }
 
-func (b *Sender) SendGroupSign(groupID uint64) error {
-	return api.SendGroupSign(b, groupID)
+func (b *Sender) SendGroupSign(groupID GroupID) error {
+	return api.SendGroupSign(b, uint64(groupID))
 }
 
-func (b *Sender) SetGroupAnonymous(groupID uint64, enable bool) error {
-	return api.SetGroupAnonymous(b, groupID, enable)
+func (b *Sender) SetGroupAnonymous(groupID GroupID, enable bool) error {
+	return api.SetGroupAnonymous(b, uint64(groupID), enable)
 }
 
-func (b *Sender) SendGroupNotice(groupID uint64, content, image string) error {
-	return api.SendGroupNotice(b, groupID, content, image)
+func (b *Sender) SendGroupNotice(groupID GroupID, content, image string) error {
+	return api.SendGroupNotice(b, uint64(groupID), content, image)
 }
 
-func (b *Sender) GetGroupNotice(groupID uint64) ([]any, error) {
-	return api.GetGroupNotice(b, groupID)
+func (b *Sender) GetGroupNotice(groupID GroupID) ([]any, error) {
+	return api.GetGroupNotice(b, uint64(groupID))
 }
 
-func (b *Sender) SetGroupKick(groupID uint64, userID uint64, rejectAddRequest bool) error {
-	return api.SetGroupKick(b, groupID, userID, rejectAddRequest)
+func (b *Sender) SetGroupKick(groupID GroupID, userID UserID, rejectAddRequest bool) error {
+	return api.SetGroupKick(b, uint64(groupID), uint64(userID), rejectAddRequest)
 }
 
-func (b *Sender) SetGroupLeave(groupID uint64, isDismiss bool) error {
-	return api.SetGroupLeave(b, groupID, isDismiss)
+func (b *Sender) SetGroupLeave(groupID GroupID, isDismiss bool) error {
+	return api.SetGroupLeave(b, uint64(groupID), isDismiss)
 }
 
-func (b *Sender) SetGroupPortrait(groupID uint64, file string, cache int) error {
-	return api.SetGroupPortrait(b, groupID, file, cache)
+func (b *Sender) SetGroupPortrait(groupID GroupID, file string, cache int) error {
+	return api.SetGroupPortrait(b, uint64(groupID), file, cache)
 }
 
-func (b *Sender) SetGroupCard(groupID uint64, userID uint64, card string) error {
-	return api.SetGroupCard(b, groupID, userID, card)
+func (b *Sender) SetGroupCard(groupID GroupID, userID UserID, card string) error {
+	return api.SetGroupCard(b, uint64(groupID), uint64(userID), card)
 }
 
 // File APIs
 
-func (b *Sender) UploadGroupFile(groupID uint64, file, name, folder string) error {
-	return api.UploadGroupFile(b, groupID, file, name, folder)
+func (b *Sender) UploadGroupFile(groupID GroupID, file, name, folder string) error {
+	return api.UploadGroupFile(b, uint64(groupID), file, name, folder)
 }
 
-func (b *Sender) DeleteGroupFile(groupID uint64, fileID string, busid int32) error {
-	return api.DeleteGroupFile(b, groupID, fileID, busid)
+func (b *Sender) DeleteGroupFile(groupID GroupID, fileID string, busid int32) error {
+	return api.DeleteGroupFile(b, uint64(groupID), fileID, busid)
 }
 
-func (b *Sender) CreateGroupFileFolder(groupID uint64, name, parentID string) error {
-	return api.CreateGroupFileFolder(b, groupID, name, parentID)
+func (b *Sender) CreateGroupFileFolder(groupID GroupID, name, parentID string) error {
+	return api.CreateGroupFileFolder(b, uint64(groupID), name, parentID)
 }
 
-func (b *Sender) DeleteGroupFileFolder(groupID uint64, folderID string) error {
-	return api.DeleteGroupFileFolder(b, groupID, folderID)
+func (b *Sender) DeleteGroupFileFolder(groupID GroupID, folderID string) error {
+	return api.DeleteGroupFileFolder(b, uint64(groupID), folderID)
 }
 
-func (b *Sender) GetGroupFileSystemInfo(groupID uint64) (*api.GroupFileSystemInfo, error) {
-	return api.GetGroupFileSystemInfo(b, groupID)
+func (b *Sender) GetGroupFileSystemInfo(groupID GroupID) (*api.GroupFileSystemInfo, error) {
+	return api.GetGroupFileSystemInfo(b, uint64(groupID))
 }
 
-func (b *Sender) GetGroupRootFiles(groupID uint64) (*struct {
+func (b *Sender) GetGroupRootFiles(groupID GroupID) (*struct {
 	Files   []api.GroupFile   `json:"files"`
 	Folders []api.GroupFolder `json:"folders"`
 }, error) {
-	return api.GetGroupRootFiles(b, groupID)
+	return api.GetGroupRootFiles(b, uint64(groupID))
 }
 
-func (b *Sender) GetGroupFilesByFolder(groupID uint64, folderID string) (*struct {
+func (b *Sender) GetGroupFilesByFolder(groupID GroupID, folderID string) (*struct {
 	Files   []api.GroupFile   `json:"files"`
 	Folders []api.GroupFolder `json:"folders"`
 }, error) {
-	return api.GetGroupFilesByFolder(b, groupID, folderID)
+	return api.GetGroupFilesByFolder(b, uint64(groupID), folderID)
 }
 
-func (b *Sender) GetGroupFileUrl(groupID uint64, fileID string, busid int32) (string, error) {
-	return api.GetGroupFileUrl(b, groupID, fileID, busid)
+func (b *Sender) GetGroupFileUrl(groupID GroupID, fileID string, busid int32) (string, error) {
+	return api.GetGroupFileUrl(b, uint64(groupID), fileID, busid)
 }
 
-func (b *Sender) UploadPrivateFile(userID uint64, file, name string) error {
-	return api.UploadPrivateFile(b, userID, file, name)
+func (b *Sender) UploadPrivateFile(userID UserID, file, name string) error {
+	return api.UploadPrivateFile(b, uint64(userID), file, name)
 }
 
 // System APIs

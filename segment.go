@@ -15,12 +15,12 @@ func Text(text string) Segment {
 }
 
 // create at segment
-func At(userID int64) Segment {
+func At(userID UserID) Segment {
 	return atSegment(userID)
 }
 
 // create face segment
-func Face(id int16) Segment {
+func Face(id FaceID) Segment {
 	return faceSegment(id)
 }
 
@@ -38,9 +38,9 @@ func textSegment(text string) Segment {
 	}
 }
 
-func atSegment(userID int64) Segment {
+func atSegment(userID UserID) Segment {
 	var target string
-	if userID == int64(AtAll) {
+	if userID == AtAll {
 		target = "all"
 	} else {
 		target = fmt.Sprintf("%d", userID)
@@ -53,7 +53,7 @@ func atSegment(userID int64) Segment {
 	}
 }
 
-func faceSegment(id int16) Segment {
+func faceSegment(id FaceID) Segment {
 	return Segment{
 		Type: "face",
 		Data: map[string]any{
@@ -169,7 +169,7 @@ func customNodeSegment(name string, uin uint64, content ...any) Segment {
 	}
 }
 
-func replySegment(msgID uint64) Segment {
+func replySegment(msgID MsgID) Segment {
 	return Segment{
 		Type: "reply",
 		Data: map[string]any{
@@ -185,9 +185,9 @@ func rawArrayToSegments(array []MsgItem) []Segment {
 		case TextItem:
 			segments = append(segments, textSegment(v.String()))
 		case AtItem:
-			segments = append(segments, atSegment(int64(v)))
+			segments = append(segments, atSegment(UserID(v)))
 		case FaceItem:
-			segments = append(segments, faceSegment(int16(v)))
+			segments = append(segments, faceSegment(FaceID(v)))
 		case *ImageItem:
 			segments = append(segments, imageSegment(v.Url))
 		}
@@ -210,17 +210,13 @@ func toSegments(args ...any) []Segment {
 			}
 			segments = append(segments, textSegment(v.String()))
 		case AtItem:
-			if int64(v) <= 0 {
-				log.Printf("[WARN] continue invalid [at:%d] segment", v)
-				continue
-			}
-			segments = append(segments, atSegment(int64(v)))
+			segments = append(segments, atSegment(UserID(v)))
+		case UserID:
+			segments = append(segments, atSegment(v))
 		case FaceItem:
-			if int16(v) < 0 {
-				log.Printf("[WARN] continue invalid [face:%d] segment", v)
-				continue
-			}
-			segments = append(segments, faceSegment(int16(v)))
+			segments = append(segments, faceSegment(FaceID(v)))
+		case FaceID:
+			segments = append(segments, faceSegment(v))
 		case *ImageItem:
 			if v == nil {
 				log.Println("[WARN] continue nil image segment")

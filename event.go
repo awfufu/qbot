@@ -66,9 +66,9 @@ func parseMsgJson(raw *api.MessageJson) *Message {
 	}
 
 	result := Message{
-		MsgID:   raw.MessageID,
-		UserID:  raw.Sender.UserID,
-		GroupID: raw.GroupID,
+		MsgID:   MsgID(raw.MessageID),
+		UserID:  UserID(raw.Sender.UserID),
+		GroupID: GroupID(raw.GroupID),
 		Name:    raw.Sender.Nickname,
 		Time:    raw.Time,
 		Raw:     raw.RawMessage,
@@ -108,9 +108,10 @@ func parseMsgJson(raw *api.MessageJson) *Message {
 		case "reply":
 			switch v := jsonData["id"].(type) {
 			case string: // string
-				result.ReplyID, _ = strconv.ParseUint(v, 10, 64)
+				replyId, _ := strconv.ParseUint(v, 10, 64)
+				result.ReplyID = MsgID(replyId)
 			case float64: // number
-				result.ReplyID = uint64(v)
+				result.ReplyID = MsgID(v)
 			}
 		case "text":
 			if text, ok := jsonData["text"].(string); ok {
@@ -121,7 +122,7 @@ func parseMsgJson(raw *api.MessageJson) *Message {
 			switch v := jsonData["qq"].(type) {
 			case string:
 				if v == "all" {
-					item = AtAll
+					item = AtItem(AtAll)
 				} else {
 					qq, err := strconv.ParseInt(v, 10, 64)
 					if err != nil {
@@ -184,18 +185,18 @@ func parseEmojiLikeNotice(raw *api.EmojiLikeNotice) *EmojiReaction {
 	}
 
 	notice := &EmojiReaction{
-		GroupID:   raw.GroupID,
-		UserID:    raw.UserID,
-		MessageID: raw.MessageID,
+		GroupID:   GroupID(raw.GroupID),
+		UserID:    UserID(raw.UserID),
+		MessageID: MsgID(raw.MessageID),
 		IsAdd:     raw.IsAdd,
 		Count:     raw.Likes[0].Count,
 	}
 
-	id, err := strconv.ParseUint(raw.Likes[0].EmojiID, 10, 64)
+	id, err := strconv.ParseUint(raw.Likes[0].EmojiID, 10, 16)
 	if err != nil {
 		return nil
 	}
-	notice.FaceID = id
+	notice.FaceID = FaceID(id)
 
 	if id < 1000 {
 		notice.IsQFace = true
@@ -210,10 +211,10 @@ func parseEmojiLikeNotice(raw *api.EmojiLikeNotice) *EmojiReaction {
 func parseRecallNotice(raw *api.RecallNotice) *RecallNotice {
 	return &RecallNotice{
 		ChatType:   Group,
-		GroupID:    raw.GroupID,
-		UserID:     raw.UserID,
-		OperatorID: raw.OperatorID,
-		MessageID:  raw.MessageID,
+		GroupID:    GroupID(raw.GroupID),
+		UserID:     UserID(raw.UserID),
+		OperatorID: UserID(raw.OperatorID),
+		MessageID:  MsgID(raw.MessageID),
 		Time:       raw.Time,
 	}
 }
@@ -224,12 +225,12 @@ func parsePokeNotify(raw *api.PokeNotify) *PokeNotify {
 	}
 	notify := &PokeNotify{
 		ChatType: Group,
-		GroupID:  raw.GroupID,
-		SenderID: raw.UserID,
-		TargetID: raw.TargetID,
+		GroupID:  GroupID(raw.GroupID),
+		SenderID: UserID(raw.UserID),
+		TargetID: UserID(raw.TargetID),
 	}
 
-	if notify.GroupID == 0 {
+	if notify.GroupID == InvalidGroup {
 		notify.ChatType = Private
 	}
 
