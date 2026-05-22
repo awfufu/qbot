@@ -2,12 +2,14 @@ package qbot
 
 import (
 	"encoding/json"
+	"log"
 	"strconv"
 
 	"github.com/awfufu/qbot/api"
 )
 
 func (r *Receiver) handleEvents(header *eventHeader, msgStr *[]byte) {
+	log.Println(string(*msgStr))
 	switch header.PostType {
 	case "notice":
 		switch header.NoticeType {
@@ -17,6 +19,16 @@ func (r *Receiver) handleEvents(header *eventHeader, msgStr *[]byte) {
 				if n := parseEmojiLikeNotice(notice); n != nil {
 					select {
 					case r.emojiLike <- n:
+					default:
+					}
+				}
+			}
+		case "group_upload":
+			notice := &api.GroupUploadNotice{}
+			if json.Unmarshal(*msgStr, notice) == nil {
+				if n := parseGroupUploadNotice(notice); n != nil {
+					select {
+					case r.file <- n:
 					default:
 					}
 				}
@@ -51,18 +63,39 @@ func (r *Receiver) handleEvents(header *eventHeader, msgStr *[]byte) {
 		if json.Unmarshal(*msgStr, msgJson) != nil {
 			return
 		}
-		if msg := parseMsgJson(msgJson); msg != nil {
+		msg, media, file := parseMsgJson(msgJson)
+		if msg != nil {
 			select {
 			case r.message <- msg:
+			default:
+			}
+		}
+		if media != nil {
+			switch media.Kind {
+			case "record":
+				select {
+				case r.record <- media:
+				default:
+				}
+			case "video":
+				select {
+				case r.video <- media:
+				default:
+				}
+			}
+		}
+		if file != nil {
+			select {
+			case r.file <- file:
 			default:
 			}
 		}
 	}
 }
 
-func parseMsgJson(raw *api.MessageJson) *Message {
+func parseMsgJson(raw *api.MessageJson) (*Message, *MediaMessage, *FileMessage) {
 	if raw == nil {
-		return nil
+		return nil, nil, nil
 	}
 
 	result := Message{
@@ -73,6 +106,11 @@ func parseMsgJson(raw *api.MessageJson) *Message {
 		Time:    raw.Time,
 		Raw:     raw.RawMessage,
 	}
+
+	var (
+		file  *FileMessage
+		media *MediaMessage
+	)
 
 	if raw.Sender.Card != "" {
 		result.GroupCard = raw.Sender.Card
@@ -101,7 +139,7 @@ func parseMsgJson(raw *api.MessageJson) *Message {
 	for _, msg := range raw.Message {
 		var jsonData map[string]any
 		if err := json.Unmarshal(msg.Data, &jsonData); err != nil {
-			return nil
+			return nil, nil, nil
 		}
 
 		switch msg.Type {
@@ -153,6 +191,44 @@ func parseMsgJson(raw *api.MessageJson) *Message {
 					Url: url,
 				})
 			}
+		case "record", "video":
+			media = &MediaMessage{Kind: msg.Type}
+			if name, ok := jsonData["file"].(string); ok {
+				media.FileName = name
+			}
+			if path, ok := jsonData["path"].(string); ok {
+				media.Path = path
+			}
+			if url, ok := jsonData["url"].(string); ok {
+				media.Url = url
+			}
+			switch v := jsonData["file_size"].(type) {
+			case string:
+				size, err := strconv.ParseInt(v, 10, 64)
+				if err == nil {
+					media.FileSize = size
+				}
+			case float64:
+				media.FileSize = int64(v)
+			}
+		case "file":
+			file = &FileMessage{Kind: "message"}
+			if name, ok := jsonData["file"].(string); ok {
+				file.FileName = name
+			}
+			if id, ok := jsonData["file_id"].(string); ok {
+				file.FileID = id
+			}
+			switch v := jsonData["file_size"].(type) {
+			case string:
+				size, err := strconv.ParseInt(v, 10, 64)
+				if err != nil {
+					continue
+				}
+				file.FileSize = size
+			case float64:
+				file.FileSize = int64(v)
+			}
 
 		// case "record":
 		// 	if path, ok := jsonData["path"].(string); ok {
@@ -173,10 +249,38 @@ func parseMsgJson(raw *api.MessageJson) *Message {
 		// 		Data: string(msg.Data),
 		// 	})
 		default:
-			return nil
+			return nil, nil, nil
 		}
 	}
-	return &result
+	if len(result.Array) == 0 && result.ReplyID == InvalidMsgID {
+		result = Message{}
+	}
+	if file != nil {
+		file.ChatType = result.ChatType
+		file.MsgID = result.MsgID
+		file.UserID = result.UserID
+		file.Name = result.Name
+		file.Time = result.Time
+		file.GroupID = result.GroupID
+		file.GroupCard = result.GroupCard
+		file.GroupRole = result.GroupRole
+	}
+	if media != nil {
+		media.ChatType = result.ChatType
+		media.MsgID = result.MsgID
+		media.UserID = result.UserID
+		media.Name = result.Name
+		media.Time = result.Time
+		media.GroupID = result.GroupID
+		media.GroupCard = result.GroupCard
+		media.GroupRole = result.GroupRole
+		media.Raw = result.Raw
+	}
+	sendMessage := len(result.Array) > 0 || result.ReplyID != InvalidMsgID
+	if !sendMessage {
+		return nil, media, file
+	}
+	return &result, media, file
 }
 
 func parseEmojiLikeNotice(raw *api.EmojiLikeNotice) *EmojiReaction {
@@ -253,4 +357,21 @@ func parsePokeNotify(raw *api.PokeNotify) *PokeNotify {
 		}
 	}
 	return notify
+}
+
+func parseGroupUploadNotice(raw *api.GroupUploadNotice) *FileMessage {
+	if raw == nil {
+		return nil
+	}
+	return &FileMessage{
+		Kind:     "upload",
+		ChatType: Group,
+		GroupID:  GroupID(raw.GroupID),
+		UserID:   UserID(raw.UserID),
+		Time:     raw.Time,
+		FileID:   raw.File.ID,
+		FileName: raw.File.Name,
+		FileSize: raw.File.Size,
+		BusID:    raw.File.BusID,
+	}
 }

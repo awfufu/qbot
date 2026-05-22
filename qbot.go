@@ -16,6 +16,9 @@ type Receiver struct {
 
 	// Channels for events
 	message   chan *Message
+	record    chan *MediaMessage
+	video     chan *MediaMessage
+	file      chan *FileMessage
 	emojiLike chan *EmojiReaction
 	recall    chan *RecallNotice
 	poke      chan *PokeNotify
@@ -41,6 +44,9 @@ func HttpClient(url string) *Sender {
 func HttpServer(address string) *Receiver {
 	rx := &Receiver{
 		message:   make(chan *Message, 100),
+		record:    make(chan *MediaMessage, 100),
+		video:     make(chan *MediaMessage, 100),
+		file:      make(chan *FileMessage, 100),
 		emojiLike: make(chan *EmojiReaction, 100),
 		recall:    make(chan *RecallNotice, 100),
 		poke:      make(chan *PokeNotify, 100),
@@ -61,6 +67,9 @@ func HttpServer(address string) *Receiver {
 		}
 		close(rx.err)
 		close(rx.message)
+		close(rx.record)
+		close(rx.video)
+		close(rx.file)
 		close(rx.emojiLike)
 		close(rx.recall)
 		close(rx.poke)
@@ -73,6 +82,18 @@ func HttpServer(address string) *Receiver {
 
 func (r *Receiver) OnMessage() <-chan *Message {
 	return r.message
+}
+
+func (r *Receiver) OnRecord() <-chan *MediaMessage {
+	return r.record
+}
+
+func (r *Receiver) OnVideo() <-chan *MediaMessage {
+	return r.video
+}
+
+func (r *Receiver) OnFile() <-chan *FileMessage {
+	return r.file
 }
 
 func (r *Receiver) OnEmojiReaction() <-chan *EmojiReaction {

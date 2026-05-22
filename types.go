@@ -17,10 +17,13 @@ const (
 type MsgType uint8
 
 const (
-	TextType  MsgType = 1
-	AtType    MsgType = 2
-	FaceType  MsgType = 3
-	ImageType MsgType = 4
+	TextType   MsgType = 1
+	AtType     MsgType = 2
+	FaceType   MsgType = 3
+	ImageType  MsgType = 4
+	RecordType MsgType = 5
+	VideoType  MsgType = 6
+	FileType   MsgType = 7
 
 	UnknownType MsgType = 0
 )
@@ -78,6 +81,43 @@ func (i *ImageItem) At() UserID        { return InvalidUser }
 func (i *ImageItem) Face() FaceID      { return InvalidFace }
 func (i *ImageItem) Image() *ImageItem { return i }
 
+type FileItem struct {
+	FileName string
+	FileID   string
+	FileSize int64
+	Url      string
+}
+
+func (i *FileItem) Type() MsgType     { return FileType }
+func (i *FileItem) Text() string      { return "" }
+func (i *FileItem) At() UserID        { return InvalidUser }
+func (i *FileItem) Face() FaceID      { return InvalidFace }
+func (i *FileItem) Image() *ImageItem { return nil }
+
+type MediaItem struct {
+	Kind     string
+	FileName string
+	Path     string
+	Url      string
+	FileSize int64
+}
+
+func (i *MediaItem) Type() MsgType {
+	switch i.Kind {
+	case "record":
+		return RecordType
+	case "video":
+		return VideoType
+	default:
+		return UnknownType
+	}
+}
+
+func (i *MediaItem) Text() string      { return "" }
+func (i *MediaItem) At() UserID        { return InvalidUser }
+func (i *MediaItem) Face() FaceID      { return InvalidFace }
+func (i *MediaItem) Image() *ImageItem { return nil }
+
 type ChatType int8
 
 const (
@@ -113,6 +153,43 @@ type Message struct {
 	// content
 	Raw   string
 	Array []MsgItem
+}
+
+type FileMessage struct {
+	Kind     string
+	ChatType ChatType
+	MsgID    MsgID
+	UserID   UserID
+	Name     string
+	Time     uint64
+
+	GroupID   GroupID
+	GroupCard string
+	GroupRole GroupRole
+
+	FileName string
+	FileID   string
+	FileSize int64
+	BusID    int32
+}
+
+type MediaMessage struct {
+	Kind     string
+	ChatType ChatType
+	MsgID    MsgID
+	UserID   UserID
+	Name     string
+	Time     uint64
+
+	GroupID   GroupID
+	GroupCard string
+	GroupRole GroupRole
+
+	Raw      string
+	FileName string
+	Path     string
+	Url      string
+	FileSize int64
 }
 
 type EmojiLikeItem struct {

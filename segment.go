@@ -190,6 +190,33 @@ func rawArrayToSegments(array []MsgItem) []Segment {
 			segments = append(segments, faceSegment(FaceID(v)))
 		case *ImageItem:
 			segments = append(segments, imageSegment(v.Url))
+		case *MediaItem:
+			file := v.Url
+			if file == "" {
+				file = v.Path
+			}
+			if file == "" {
+				file = v.FileName
+			}
+			if file != "" {
+				switch v.Kind {
+				case "video":
+					segments = append(segments, videoSegment(file))
+				default:
+					segments = append(segments, recordSegment(file))
+				}
+			}
+		case *FileItem:
+			file := v.Url
+			if file == "" {
+				file = v.FileID
+			}
+			if file == "" {
+				file = v.FileName
+			}
+			if file != "" {
+				segments = append(segments, fileSegment(file))
+			}
 		}
 	}
 	return segments
@@ -223,6 +250,45 @@ func toSegments(args ...any) []Segment {
 				continue
 			}
 			segments = append(segments, imageSegment(v.Url))
+		case *MediaItem:
+			if v == nil {
+				log.Println("[WARN] continue nil media segment")
+				continue
+			}
+			file := v.Url
+			if file == "" {
+				file = v.Path
+			}
+			if file == "" {
+				file = v.FileName
+			}
+			if file == "" {
+				log.Println("[WARN] continue empty media segment")
+				continue
+			}
+			switch v.Kind {
+			case "video":
+				segments = append(segments, videoSegment(file))
+			default:
+				segments = append(segments, recordSegment(file))
+			}
+		case *FileItem:
+			if v == nil {
+				log.Println("[WARN] continue nil file segment")
+				continue
+			}
+			file := v.Url
+			if file == "" {
+				file = v.FileID
+			}
+			if file == "" {
+				file = v.FileName
+			}
+			if file == "" {
+				log.Println("[WARN] continue empty file segment")
+				continue
+			}
+			segments = append(segments, fileSegment(file))
 		case []MsgItem:
 			if len(v) == 0 {
 				log.Println("[WARN] continue empty msg item array")

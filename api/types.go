@@ -293,3 +293,15 @@ type PokeNotify struct {
 	SubType  string `json:"sub_type"`
 	RawInfo  any    `json:"raw_info"`
 }
+
+type GroupUploadNotice struct {
+	GroupID uint64 `json:"group_id"`
+	UserID  uint64 `json:"user_id"`
+	Time    uint64 `json:"time"`
+	File    struct {
+		ID    string `json:"id"`
+		Name  string `json:"name"`
+		Size  int64  `json:"size"`
+		BusID int32  `json:"busid"`
+	} `json:"file"`
+}
